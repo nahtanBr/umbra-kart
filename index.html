@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Umbra kart</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#7f1d1d"/>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Umbra kart">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <meta name="format-detection" content="telephone=no">
+  <style>
+    :root{ --bg:#7f1d1d; --bg-dark:#4a1d1d; --text:#e5e7eb; --muted:#cbd5e1; --card:rgba(255,255,255,0.06); --border:rgba(255,255,255,0.15); --accent:#fca5a5; --success:#86efac; --danger:#fca5a5; }
+    *{box-sizing:border-box} html,body{height:100%} body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Helvetica Neue,Arial;color:var(--text);background:linear-gradient(to bottom,var(--bg),var(--bg-dark));min-height:100%}
+    .bg-layer{position:fixed;inset:0;background:linear-gradient(to bottom,var(--bg),var(--bg-dark));z-index:-1;pointer-events:none}
+    .container{max-width:1100px;margin:0 auto;padding:16px;display:grid;gap:16px;position:relative;z-index:0}
+    header{display:flex;align-items:center;justify-content:space-between;gap:12px} h1{margin:0;font-size:20px}
+    .row{display:grid;grid-template-columns:1fr;gap:16px} @media(min-width:900px){.row{grid-template-columns:1fr 1fr}}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+    .title{font-weight:700;margin:0 0 8px 0} .muted{color:var(--muted);font-size:12px}
+    .btn{appearance:none;border:1px solid var(--border);background:rgba(255,255,255,0.08);color:var(--text);padding:10px 12px;border-radius:12px;cursor:pointer;font-weight:600;-webkit-tap-highlight-color:transparent}
+    .btn:hover{background:rgba(255,255,255,0.14)} .btn.primary{background:linear-gradient(to bottom right,#fecaca,#fcd34d);color:#111;border:none;font-weight:800}
+    .btn.success{background:#86efac;color:#111;border:none} .btn.danger{background:#fca5a5;color:#111;border:none} .btn.small{padding:8px 10px;border-radius:10px;font-size:14px}
+    input[type="text"],input[type="number"],select,textarea{width:100%;background:rgba(0,0,0,0.35);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:10px 12px;outline:none;font-size:16px}
+    textarea{resize:vertical} .grid{display:grid;gap:10px} .grid-2{display:grid;gap:10px;grid-template-columns:1fr 1fr} .flex{display:flex;gap:8px;align-items:center} .flex-wrap{display:flex;flex-wrap:wrap;gap:6px;align-items:center} .space-between{display:flex;justify-content:space-between;gap:10px;align-items:center}
+    .list{list-style:none;margin:0;padding:0;display:grid;gap:8px} .pill{border:1px solid var(--border);background:rgba(255,255,255,0.12);padding:4px 10px;border-radius:999px;font-size:12px}
+    .color-swatch{width:26px;height:26px;border-radius:6px;border:2px solid transparent;cursor:pointer} .color-swatch.active{border-color:#fff}
+    .scroll{max-height:260px;overflow:auto;padding-right:4px;-webkit-overflow-scrolling:touch} .tag{font-size:11px;color:var(--muted)} .hidden{display:none!important} .hr{height:1px;background:var(--border);margin:6px 0}
+  </style>
+</head>
+<body>
+  <div class="bg-layer" aria-hidden="true"></div>
+  <div class="container">
+    <header>
+      <div><h1>Umbra kart</h1><div class="muted">PWA · Offline · Añadir a pantalla de inicio</div></div>
+      <div class="flex">
+        <div id="colorPalette" class="flex"></div>
+        <label class="flex" style="font-size:14px"><input id="adminToggle" type="checkbox" style="margin-right:6px"/> Modo Admin</label>
+        <div id="seedGroup" class="flex"><span class="muted" style="font-size:12px">Semilla RNG</span><input id="seedInput" type="text" placeholder="opcional" style="width:160px"/></div>
+      </div>
+    </header>
+
+    <div class="row">
+      <div class="grid">
+        <section class="card">
+          <div class="space-between">
+            <div class="title" style="font-size:16px">Modo Árbitro y fases</div>
+            <label class="flex" style="font-size:14px"><input id="arbToggle" type="checkbox" checked style="margin-right:6px"/> Activado</label>
+          </div>
+          <div class="grid-2">
+            <label>Jugadores <input id="totalPlayers" type="number" min="1" value="6"/></label>
+            <label>Tu posición <input id="position" type="number" min="1" value="3"/></label>
+          </div>
+          <div class="grid-2">
+            <div>Mazo sugerido <div id="deckSuggested" class="pill" style="display:inline-block;margin-top:4px">delanteros</div></div>
+            <div>Fase: <b id="phaseLabel">reponer</b></div>
+          </div>
+          <div class="flex" style="margin-top:6px">
+            <button id="nextPhaseBtn" class="btn small">Siguiente fase</button>
+            <button id="resetTurnBtn" class="btn small">Reiniciar</button>
+            <label class="flex" style="margin-left:auto;font-size:14px"><input id="tomoCaja" type="checkbox" style="margin-right:6px"/> Tomé caja</label>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="space-between">
+            <div class="flex"><input id="playerName" type="text" value="Jugador 1" style="width:160px"/><span id="fcBadge" class="pill">OK</span></div>
+            <button id="fcBtn" class="btn small">Entrar a FC</button>
+          </div>
+          <div class="hr"></div>
+          <div>
+            <div class="space-between"><div class="title" style="font-size:14px">Marcha actual</div><div class="muted">Bonificador: <b id="bonifLabel">+2</b></div></div>
+            <div class="flex-wrap" id="gearBtns"></div>
+          </div>
+          <div class="grid-2" style="margin-top:12px; align-items:start">
+            <div><div class="title" style="font-size:14px">Lanzar 2d6 + bonif marcha</div><button id="roll2d6Btn" class="btn primary">Lanzar 2d6</button></div>
+            <div>
+              <div class="space-between">
+                <div class="title" style="font-size:14px">Tiradas</div>
+                <div class="flex">
+                  <label class="flex">Dados (d6)
+                    <select id="diceCount" style="width:70px;margin-left:6px"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option></select>
+                  </label>
+                  <button id="rollGenericBtn" class="btn small">Tirar</button>
+                </div>
+              </div>
+              <ul id="diceLog" class="list scroll" style="margin-top:8px; max-height:160px"></ul>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="grid">
+        <section class="card">
+          <div class="space-between">
+            <div><div class="title" style="font-size:16px">Poderes</div><div class="muted">Máx 1 en mano y 1 activo</div></div>
+            <div class="flex"><button id="drawSuggestedBtn" class="btn small">Robar — Mazo sugerido</button><button id="discardHandBtn" class="btn small">Descartar mano</button></div>
+          </div>
+          <div class="grid" style="margin-top:8px"><div class="title" style="font-size:14px">En mano</div><ul id="handList" class="list"></ul></div>
+          <div class="grid" style="margin-top:8px"><div class="title" style="font-size:14px">Activo</div><ul id="activeList" class="list"></ul></div>
+        </section>
+        <section class="card"><div class="title" style="font-size:16px">Historial</div><ul id="history" class="list scroll"></ul></section>
+        <section id="adminSection" class="card hidden"><div class="space-between"><div class="title" style="font-size:16px">Catálogo de poderes (sólo Admin)</div><button id="addPowerBtn" class="btn small">+ Añadir</button></div><ul id="catalogList" class="list scroll"></ul></section>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js'); }); }
+    const LS_KEY="umbra-panel-pwa-v2"; const bonifs={1:0,2:1,3:2,4:3,5:4,6:5};
+    const COLOR_OPTIONS=["#0f172a","#1d4ed8","#047857","#7c2d12","#4a044e","#581c87","#14532d","#7f1d1d","#312e81","#1f2937"];
+    const CATALOG_BASE=[
+      {"id":"escudo-1","nombre":"Escudo (1)","deck":"ambos","tokens":1,"tags":["escudo"],"nota":"Bloquea 1 impacto por detrás"},
+      {"id":"escudo-3","nombre":"Escudo (3)","deck":"ambos","tokens":3,"tags":["escudo"],"nota":"Orbital 360° (3 cargas)"},
+      {"id":"caparazon-azul","nombre":"Caparazón Azul","deck":"rezagados","tokens":1,"tags":["ignora-escudo","causa-fc"],"nota":"Persigue al 1º; causa FC"},
+      {"id":"bala","nombre":"Joe Bala","deck":"rezagados","tokens":2,"tags":["ignora-escudo"],"nota":"No tira dados; avanza 12+bonif por token"},
+      {"id":"rayo","nombre":"Rayo","deck":"rezagados","tokens":2,"tags":["ignora-escudo"],"nota":"T1: todos FC. T2: tope 1ª y sin poderes"},
+      {"id":"calamar","nombre":"Calamar","deck":"delanteros","tokens":2,"tags":["ignora-escudo"],"nota":"Entorpece rivales cercanos"},
+      {"id":"bomba","nombre":"Bomba","deck":"ambos","tokens":2,"tags":["ignora-escudo","causa-fc"],"nota":"Explota manual o al agotar tokens (radio 2)"},
+      {"id":"boomerang","nombre":"Boomerang","deck":"delanteros","tokens":3,"tags":["causa-fc"],"nota":"5 casillas ida/vuelta en línea recta"},
+      {"id":"champi","nombre":"Champiñón","deck":"delanteros","tokens":1,"nota":"+2 marchas; duplica bonif o dado mayor"},
+      {"id":"champi-dorado","nombre":"Champiñón Dorado","deck":"rezagados","tokens":1,"nota":"Relanza mientras haya dados >2 (misma tirada)"},
+      {"id":"planta","nombre":"Planta Carnívora","deck":"delanteros","tokens":1,"tags":["ignora-escudo","causa-fc"],"nota":"FC a adyacentes durante avance"},
+      {"id":"estrella","nombre":"Estrella","deck":"rezagados","tokens":1,"tags":["ignora-escudo"],"nota":"+2 marchas; duplica; FC al estrellar"},
+      {"id":"banana","nombre":"Cáscara","deck":"ambos","tokens":1,"tags":["escudo"],"nota":"Atrás: trampa; quien pisa pierde 2 marchas y se detiene"},
+      {"id":"ladronsito","nombre":"Ladrón de Carta","deck":"ambos","tokens":1,"nota":"Roba 1 carta de la mano de un rival"}
+    ];
+    const DEFAULT_COUNTS=Object.fromEntries(CATALOG_BASE.map(p=>[p.id,{delanteros:p.deck!=="rezagados"?1:0,rezagados:p.deck!=="delanteros"?1:0}]));
+
+    function mulberry32(seed){return function(){let t=(seed+=0x6d2b79f5);t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296;};}
+    function makeRNG(seedStr){ if(!seedStr) return Math.random; let h=2166136261>>>0; for(let i=0;i<seedStr.length;i++){h^=seedStr.charCodeAt(i); h=Math.imul(h,16777619);} const gen=mulberry32(h>>>0); return ()=>gen(); }
+    function rollDie(sides, rng){ return 1 + Math.floor(rng()*sides); }
+    function darkenJS(hex, amt){ const h=hex.replace('#',''); const num=parseInt(h.length===3?h.split('').map(c=>c+c).join(''):h,16); let r=(num>>16)&255,g=(num>>8)&255,b=num&255; r=Math.max(0,Math.min(255,r-amt)); g=Math.max(0,Math.min(255,g-amt)); b=Math.max(0,Math.min(255,b-amt)); return '#'+((r<<16)|(g<<8)|b).toString(16).padStart(6,'0'); }
+    function sugerirDeck(pos,total){ if(total<=1) return "ambos"; const frontCut=Math.floor(total/2); return pos<=frontCut?"delanteros":"rezagados"; }
+    function weightedPick(rng, deck, counts, catalog){ const pool=catalog.filter(p=>p.deck===deck||p.deck==="ambos"); const weights=pool.map(p=>Math.max(0,(counts[p.id]?.[deck]??0))); const total=weights.reduce((a,b)=>a+b,0); if(total<=0) return null; let r=rng()*total; for(let i=0;i<pool.length;i++){ r-=weights[i]; if(r<=0) return pool[i]; } return pool[pool.length-1]; }
+
+    const state={ nombre:"Jugador 1",marcha:3,fc:false,seed:"",mano:[],activos:[],modoArbitro:true,jugadoresTotal:6,posicionActual:3,fase:"reponer",tomoCaja:false,counts:JSON.parse(JSON.stringify(DEFAULT_COUNTS)),admin:false,catalog:JSON.parse(JSON.stringify(CATALOG_BASE)),diceCount:2,diceLog:[],color:"#7f1d1d",hist:[] };
+
+    const el=(id)=>document.getElementById(id); const colorPalette=el("colorPalette"),adminToggle=el("adminToggle"),seedInput=el("seedInput"),seedGroup=el("seedGroup");
+    const playerName=el("playerName"),fcBtn=el("fcBtn"),fcBadge=el("fcBadge"),gearBtns=el("gearBtns"),bonifLabel=el("bonifLabel");
+    const roll2d6Btn=el("roll2d6Btn"),arbToggle=el("arbToggle"),totalPlayers=el("totalPlayers"),position=el("position"),deckSuggested=el("deckSuggested"),phaseLabel=el("phaseLabel"),nextPhaseBtn=el("nextPhaseBtn"),resetTurnBtn=el("resetTurnBtn");
+    const tomoCaja=el("tomoCaja"),drawSuggestedBtn=el("drawSuggestedBtn"),discardHandBtn=el("discardHandBtn"),handList=el("handList"),activeList=el("activeList"),diceCountSel=el("diceCount"),rollGenericBtn=el("rollGenericBtn"),diceLog=el("diceLog"),history=el("history"),adminSection=el("adminSection"),addPowerBtn=el("addPowerBtn"),catalogList=el("catalogList");
+
+    function setTheme(c){ document.documentElement.style.setProperty('--bg', c); document.documentElement.style.setProperty('--bg-dark', darkenJS(c,40)); state.color=c; renderPalette(c); save(); }
+    function renderPalette(sel){ colorPalette.innerHTML=""; COLOR_OPTIONS.forEach(c=>{ const b=document.createElement('button'); b.className='color-swatch'+(sel===c?' active':''); b.style.backgroundColor=c; b.onclick=()=>setTheme(c); colorPalette.appendChild(b); }); }
+    function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){} }
+    function pushHist(msg){ const line=new Date().toLocaleTimeString()+" — "+msg; state.hist.unshift(line); state.hist=state.hist.slice(0,150); renderHistory(); save(); }
+    function pushDice(msg){ state.diceLog.unshift(msg); state.diceLog=state.diceLog.slice(0,50); renderDiceLog(); save(); }
+
+    function renderHeader(){ adminToggle.checked=state.admin; seedInput.value=state.seed||""; seedGroup.classList.toggle('hidden', !state.admin); }
+    function renderPlayer(){ playerName.value=state.nombre; fcBtn.textContent=state.fc?"Recuperar (salir FC)":"Entrar a FC"; fcBadge.textContent=state.fc?"FC (Sólo 1ª)":"OK"; fcBadge.style.background=state.fc?"rgba(251,191,36,.9)":"rgba(255,255,255,0.12)";
+      gearBtns.innerHTML=""; const canChange= state.fc || state.fase==="cierre";
+      [1,2,3,4,5,6].forEach(g=>{ const btn=document.createElement('button'); btn.className="btn small"; btn.textContent=g+"ª"; const disabledBecausePhase=!canChange; const disabledBecauseFC=state.fc && g!==1; const disabled=disabledBecausePhase||disabledBecauseFC; btn.disabled=disabled; btn.title=disabledBecausePhase ? "Sólo puedes cambiar marcha en CIERRE o estando en FC" : (disabledBecauseFC ? "En FC sólo 1ª" : ("Marcha "+g)); if(state.marcha===g){ btn.style.background="#fff"; btn.style.color="#111"; } btn.onclick=()=>{ if(disabled) return; state.marcha=g; renderAll(); save(); }; gearBtns.appendChild(btn); });
+      bonifLabel.textContent=(bonifs[state.marcha]>=0?'+':'')+bonifs[state.marcha]; }
+    function renderArbiter(){ arbToggle.checked=state.modoArbitro; totalPlayers.value=state.jugadoresTotal; position.value=state.posicionActual; deckSuggested.textContent=sugerirDeck(state.posicionActual, state.jugadoresTotal); phaseLabel.textContent=state.fase; tomoCaja.checked=state.tomoCaja; }
+    function renderPowers(){ discardHandBtn.disabled=state.mano.length===0;
+      handList.innerHTML=""; if(state.mano.length===0){ const li=document.createElement('li'); li.className="muted"; li.textContent="— Sin cartas —"; handList.appendChild(li);} else { const p=state.mano[0]; const li=document.createElement('li'); li.className="card"; li.style.padding="10px"; li.innerHTML=`<div class="space-between"><div><div class="title" style="font-size:14px">${p.nombre}</div><div class="muted">${p.deck} · ${p.tokens==="instant"?"instantáneo":(p.tokens+" token(s)")}</div>${p.nota?`<div class="tag" style="margin-top:4px">${p.nota}</div>`:""}</div><div class="flex"><button class="btn small" id="activateBtn">Activar</button></div></div>`; handList.appendChild(li); li.querySelector('#activateBtn').onclick=()=>{ if(state.fase!=="accion1"&&state.fase!=="accion2"){ pushHist("Sólo puedes activar en acción"); return; } if(state.activos.length>=1){ pushHist("Ya tienes un poder activo"); return; } const carta=state.mano[0]; if(carta.tokens==="instant"){ pushHist(`Poder instantáneo: ${carta.nombre}`); state.mano=[]; } else { state.mano=[]; state.activos=[{power:carta, tokensRestantes:Number(carta.tokens)}]; pushHist(`Activado: ${carta.nombre} (${carta.tokens} token${carta.tokens===1?"":"s"})`);} renderPowers(); save(); }; }
+      activeList.innerHTML=""; if(state.activos.length===0){ const li=document.createElement('li'); li.className="muted"; li.textContent="— Ninguno —"; activeList.appendChild(li);} else { const slot=state.activos[0]; const li=document.createElement('li'); li.className="card"; li.style.padding="10px"; const rollBtn=slot.power.requiresRoll?`<button class="btn small" id="rollActiveBtn">Tirar ${slot.power.requiresRoll}d6</button>`:""; li.innerHTML=`<div class="space-between"><div><div class="title" style="font-size:14px">${slot.power.nombre}</div><div class="muted">${slot.tokensRestantes===null?"instantáneo":(slot.tokensRestantes+" token(s) restantes")}</div>${slot.power.nota?`<div class="tag" style="margin-top:4px">${slot.power.nota}</div>`:""}</div><div class="flex">${slot.tokensRestantes!==null?`<button class="btn small success" id="spend1Btn">Gastar 1</button><button class="btn small danger" id="spendAllBtn">Gastar todos</button>`:""}${rollBtn}</div></div>`; activeList.appendChild(li); if(slot.tokensRestantes!==null){ li.querySelector('#spend1Btn').onclick=()=>{ const t=slot.tokensRestantes; if(t<=1){ pushHist(`Finaliza: ${slot.power.nombre}`); state.activos=[]; } else { slot.tokensRestantes=t-1; pushHist(`Gastas 1 token de ${slot.power.nombre} → quedan ${t-1}`);} renderPowers(); save(); }; li.querySelector('#spendAllBtn').onclick=()=>{ pushHist(`Agotas todos los tokens de ${slot.power.nombre}`); state.activos=[]; renderPowers(); save(); }; } if(slot.power.requiresRoll){ li.querySelector('#rollActiveBtn').onclick=()=>{ rollNd6(slot.power.requiresRoll, slot.power.nombre); }; } }
+    }
+    function renderDiceLog(){ diceLog.innerHTML=""; if(state.diceLog.length===0){ const li=document.createElement('li'); li.className='muted'; li.textContent="— Aún sin tiradas —"; diceLog.appendChild(li);} else { state.diceLog.forEach(line=>{ const li=document.createElement('li'); li.textContent=line; diceLog.appendChild(li); }); } }
+    function renderHistory(){ history.innerHTML=""; if(state.hist.length===0){ const li=document.createElement('li'); li.className='muted'; li.textContent="— Aún sin eventos —"; history.appendChild(li);} else { state.hist.forEach(line=>{ const li=document.createElement('li'); li.textContent=line; history.appendChild(li); }); } }
+    function renderCatalog(){ adminSection.classList.toggle('hidden', !state.admin); catalogList.innerHTML=""; state.catalog.forEach(p=>{ const li=document.createElement('li'); li.className="card"; li.style.padding="10px"; li.innerHTML=`<div class="space-between"><input class="nameIn" type="text" value="${p.nombre}"/><button class="btn small danger delBtn">Eliminar</button></div><div class="grid-2" style="margin-top:6px"><label>Nota <textarea class="notaIn" rows="2">${p.nota||""}</textarea></label><div class="grid"><label>Tokens <input class="tokensIn" type="number" value="${typeof p.tokens==='number'?p.tokens:0}"/></label><label>Mazo <select class="deckIn"><option value="delanteros" ${p.deck==='delanteros'?'selected':''}>delanteros</option><option value="rezagados" ${p.deck==='rezagados'?'selected':''}>rezagados</option><option value="ambos" ${p.deck==='ambos'?'selected':''}>ambos</option></select></label><label>Requiere tirada <select class="reqIn"><option value="0" ${!p.requiresRoll?'selected':''}>no</option><option value="1" ${p.requiresRoll===1?'selected':''}>1d6</option><option value="2" ${p.requiresRoll===2?'selected':''}>2d6</option><option value="3" ${p.requiresRoll===3?'selected':''}>3d6</option><option value="4" ${p.requiresRoll===4?'selected':''}>4d6</option></select></label></div></div><div class="flex" style="margin-top:6px"><span class="pill">Copias Delanteros</span><input class="cdIn" type="number" value="${state.counts[p.id]?.delanteros??0}" style="width:100px"/><span class="pill">Copias Rezagados</span><input class="crIn" type="number" value="${state.counts[p.id]?.rezagados??0}" style="width:100px"/></div>`; catalogList.appendChild(li); li.querySelector('.nameIn').oninput=e=>{ p.nombre=e.target.value; save(); renderPowers(); }; li.querySelector('.notaIn').oninput=e=>{ p.nota=e.target.value; save(); }; li.querySelector('.tokensIn').oninput=e=>{ p.tokens=Number(e.target.value)||0; save(); }; li.querySelector('.deckIn').onchange=e=>{ p.deck=e.target.value; save(); }; li.querySelector('.reqIn').onchange=e=>{ const v=Number(e.target.value); p.requiresRoll = v===0?undefined:v; save(); renderPowers(); }; li.querySelector('.cdIn').oninput=e=>{ const v=Math.max(0, Number(e.target.value)||0); state.counts[p.id]=state.counts[p.id]||{}; state.counts[p.id].delanteros=v; save(); }; li.querySelector('.crIn').oninput=e=>{ const v=Math.max(0, Number(e.target.value)||0); state.counts[p.id]=state.counts[p.id]||{}; state.counts[p.id].rezagados=v; save(); }; li.querySelector('.delBtn').onclick=()=>{ delete state.counts[p.id]; state.catalog = state.catalog.filter(x=>x.id!==p.id); save(); renderCatalog(); }; }); }
+    function renderAll(){ renderHeader(); renderPlayer(); renderArbiter(); renderPowers(); renderDiceLog(); renderHistory(); renderCatalog(); }
+
+    adminToggle.onchange=()=>{ state.admin=adminToggle.checked; renderAll(); save(); };
+    seedInput.oninput=()=>{ state.seed=seedInput.value; save(); };
+    playerName.oninput=()=>{ state.nombre=playerName.value; save(); };
+    fcBtn.onclick=()=>{ state.fc=!state.fc; if(state.fc) state.marcha=1; pushHist(state.fc?"FC: ACTIVADO (forzado a 1ª)":"FC: DESACTIVADO"); renderPlayer(); save(); };
+    roll2d6Btn.onclick=()=>{ if(state.fc){ pushHist("No puedes lanzar: estás FC"); return; } if(state.modoArbitro && state.fase!=="lanzar"){ pushHist("No es la fase de lanzar (Árbitro)"); return; } const rng=makeRNG(state.seed); const d1=rollDie(6,rng), d2=rollDie(6,rng); const total=d1+d2+bonifs[state.marcha]; pushHist(`2d6 (${d1}+${d2}) + bonif(${bonifs[state.marcha]}) = ${total}`); pushDice(`Movimiento: ${total}`); };
+    arbToggle.onchange=()=>{ state.modoArbitro=arbToggle.checked; save(); };
+    totalPlayers.oninput=()=>{ state.jugadoresTotal=Math.max(1, Number(totalPlayers.value)||1); renderArbiter(); save(); };
+    position.oninput=()=>{ state.posicionActual=Math.max(1, Math.min(Number(position.value)||1, state.jugadoresTotal)); renderArbiter(); save(); };
+    nextPhaseBtn.onclick=()=>{ const order=["reponer","accion1","lanzar","accion2","cierre"]; const i=order.indexOf(state.fase); state.fase=order[(i+1)%order.length]; renderArbiter(); renderPlayer(); save(); };
+    resetTurnBtn.onclick=()=>{ state.fase="reponer"; state.tomoCaja=false; renderArbiter(); renderPlayer(); save(); };
+    tomoCaja.onchange=()=>{ state.tomoCaja=tomoCaja.checked; save(); };
+    drawSuggestedBtn.onclick=()=>{ if(state.fase!=="accion1"&&state.fase!=="accion2"){ pushHist("Robar sólo en fases de acción"); return; } if(state.mano.length>=1){ pushHist("Sólo puedes tener 1 carta en mano"); return; } const deck=sugerirDeck(state.posicionActual, state.jugadoresTotal); const rng=makeRNG(state.seed); const baseDeck = deck==="ambos"?"delanteros":deck; const pick=weightedPick(rng, baseDeck, state.counts, state.catalog); if(!pick){ pushHist("No hay cartas con copias > 0 en el mazo sugerido"); return; } state.mano=[JSON.parse(JSON.stringify(pick))]; pushHist(`Robas: ${pick.nombre}${pick.nota?(" — "+pick.nota):""} (${deck})`); renderPowers(); save(); };
+    discardHandBtn.onclick=()=>{ if(state.mano.length){ state.mano=[]; pushHist("Descartas la mano"); renderPowers(); save(); } };
+    diceCountSel.onchange=()=>{ state.diceCount=Number(diceCountSel.value)||2; save(); };
+    rollGenericBtn.onclick=()=>{ rollNd6(state.diceCount); };
+    addPowerBtn.onclick=()=>{ const id=prompt("ID único?"); if(!id) return; const nombre=prompt("Nombre?")||id; const nota=prompt("Nota (regla corta)?")||""; const tokens=Number(prompt("Tokens (número)?")||1); const deck=prompt("Mazo (delanteros/rezagados/ambos)?")||"ambos"; const nuevo={id, nombre, deck, tokens, nota}; state.catalog.push(nuevo); state.counts[id]={delanteros: deck!=="rezagados"?1:0, rezagados: deck!=="delanteros"?1:0}; save(); renderCatalog(); };
+    function rollNd6(n, etiqueta){ const rng=makeRNG(state.seed); const vals=[]; for(let i=0;i<n;i++) vals.push(rollDie(6,rng)); const total=vals.reduce((a,b)=>a+b,0); const tag= etiqueta?` [${etiqueta}]`:""; pushHist(`${n}d6${tag}: ${vals.join(" + ")} = ${total}`); pushDice(`${n}d6${tag}: ${total}`); }
+    (function init(){ document.documentElement.style.setProperty('--bg', '#7f1d1d'); document.documentElement.style.setProperty('--bg-dark', '#4a1d1d'); renderPalette("#7f1d1d"); renderAll(); })();
+  </script>
+</body>
+</html>
