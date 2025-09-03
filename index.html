@@ -168,7 +168,28 @@
     seedInput.oninput=()=>{ state.seed=seedInput.value; save(); };
     playerName.oninput=()=>{ state.nombre=playerName.value; save(); };
     fcBtn.onclick=()=>{ state.fc=!state.fc; if(state.fc) state.marcha=1; pushHist(state.fc?"FC: ACTIVADO (forzado a 1ª)":"FC: DESACTIVADO"); renderPlayer(); save(); };
-    roll2d6Btn.onclick=()=>{ if(state.fc){ pushHist("No puedes lanzar: estás FC"); return; } if(state.modoArbitro && state.fase!=="lanzar"){ pushHist("No es la fase de lanzar (Árbitro)"); return; } const rng=makeRNG(state.seed); const d1=rollDie(6,rng), d2=rollDie(6,rng); const total=d1+d2+bonifs[state.marcha]; pushHist(`2d6 (${d1}+${d2}) + bonif(${bonifs[state.marcha]}) = ${total}`); pushDice(`Movimiento: ${total}`); };
+    roll2d6Btn.onclick = () => {
+  if (state.fc) { pushHist("No puedes lanzar: estás FC"); return; }
+  if (state.modoArbitro && state.fase !== "lanzar") {
+    pushHist("No es la fase de lanzar (Árbitro)"); return;
+  }
+
+  const rng = makeRNG(state.seed);
+  const d1 = rollDie(6, rng), d2 = rollDie(6, rng);
+  const bonif = bonifs[state.marcha];
+  const total = d1 + d2 + bonif;
+
+  // Derrape: +1D por cada dado que sea 5 o 2
+  const derrapes = [d1, d2].filter(v => v === 5 || v === 2).length;
+  const derrapeTxt = derrapes > 0 ? ` → Derrape +${derrapes}D` : "";
+
+  // Historial detallado SÍ muestra el derrape
+  pushHist(`2d6 (${d1}+${d2}) + bonif(${bonif}) = ${total}${derrapeTxt}`);
+
+  // Panel de Tiradas: SOLO el movimiento (sin +D)
+  pushDice(`Movimiento: ${total}`);
+};
+
     arbToggle.onchange=()=>{ state.modoArbitro=arbToggle.checked; save(); };
     totalPlayers.oninput=()=>{ state.jugadoresTotal=Math.max(1, Number(totalPlayers.value)||1); renderArbiter(); save(); };
     position.oninput=()=>{ state.posicionActual=Math.max(1, Math.min(Number(position.value)||1, state.jugadoresTotal)); renderArbiter(); save(); };
