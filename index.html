@@ -10,7 +10,7 @@
     --card:rgba(255,255,255,.06); --border:rgba(255,255,255,.15);
     --txt:#e5e7eb; --muted:#cbd5e1;
     --rad:14px; --pad:12px; --gap:12px; --gap-sm:8px;
-    --h-panel:200px; /* alto de paneles con scroll */
+    --h-panel:200px;
   }
   *{box-sizing:border-box}
   html,body{height:100%}
@@ -19,13 +19,9 @@
   .container{max-width:1200px;margin:0 auto;padding:var(--pad);display:grid;gap:var(--gap)}
   header{display:flex;align-items:center;justify-content:space-between;gap:var(--gap)}
   h1{margin:0;font-size:18px}
-  .row{
-    display:grid; gap:var(--gap);
-    grid-template-columns: 260px 1fr 360px;
-  }
+  .row{display:grid; gap:var(--gap); grid-template-columns: 260px 1fr 360px;}
   @media (max-width:1060px){ .row{ grid-template-columns: 1fr 1fr; } }
   @media (max-width:720px){ .row{ grid-template-columns: 1fr; } }
-
   .card{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:var(--pad)}
   .title{margin:0 0 6px 0;font-weight:700;font-size:14px}
   .muted{color:var(--muted);font-size:12px}
@@ -59,7 +55,7 @@
     </header>
 
     <div class="row">
-      <!-- Col 1: Árbitro compacto -->
+      <!-- Col 1: Árbitro -->
       <section class="card grid" id="arbCard">
         <div class="space">
           <h2 class="title">Modo Árbitro y fases</h2>
@@ -83,14 +79,14 @@
         </div>
       </section>
 
-      <!-- Col 2: Jugador + Dados (ancho) -->
+      <!-- Col 2: Jugador + Dados -->
       <section class="card grid" id="playerCard">
         <div class="space">
           <div class="flex">
             <input id="playerName" value="Jugador 1" style="max-width:180px"/>
             <span id="fcBadge" class="pill">OK</span>
           </div>
-          <button id="fcBtn" class="btn sm">Entrar a FC</button>
+          <button id="fcBtn" class="btn sm">FC</button>
         </div>
 
         <div class="space">
@@ -99,7 +95,7 @@
         </div>
         <div id="gearBtns" class="flex gearbar" style="flex-wrap:wrap"></div>
 
-        <!-- Dados: “2d6 + bonif” + panel de tiradas lado a lado -->
+        <!-- Dados -->
         <div class="grid" style="gap:var(--gap)">
           <div class="grid-2" style="align-items:start">
             <div class="grid">
@@ -127,7 +123,7 @@
         </div>
       </section>
 
-      <!-- Col 3: Poderes + Historial (compacto) -->
+      <!-- Col 3: Poderes + Historial -->
       <div class="grid">
         <section class="card grid">
           <div class="space">
@@ -162,7 +158,7 @@
 const bonifs={1:0,2:1,3:2,4:3,5:4,6:5};
 const COLOR_OPTIONS=["#0f172a","#1d4ed8","#047857","#7c2d12","#4a044e","#581c87","#14532d","#7f1d1d","#312e81","#1f2937"];
 
-/* ── Catálogo completo con copias por mazo ── */
+c/* ── Catálogo completo con copias por mazo ── */
 const CATALOG_BASE = [
   { id:"escudo-1", nombre:"Caparazón verde", deck:"ambos", tokens:1,
     nota:"Viaja en línea recta 12 casillas por turno hasta centrifugarse. Sirve como escudo. CAUSA FC.",
@@ -176,9 +172,9 @@ const CATALOG_BASE = [
     nota:"Tres usos del caparazón verde (viaja recto). Puede actuar como escudo. Puede causar FC.",
     copias_delanteros: 2, copias_rezagados: 2 },
 
-  { id:"escudo-3x3", nombre:"Caparazón rojo x3", deck:"ambos", tokens:3,
+  { id:"escudo-3x3", nombre:"Caparazón rojo x3", deck:"rezagados", tokens:3,
     nota:"Tres usos del caparazón rojo (busca rival). Puede causar FC.",
-    copias_delanteros: 2, copias_rezagados: 2 },
+    copias_delanteros: 0, copias_rezagados: 3 },
 
   { id:"ghost", nombre:"Ghost", deck:"rezagados", tokens:1,
     nota:"Roba 1 carta de la mano de un rival.",
@@ -198,19 +194,19 @@ const CATALOG_BASE = [
 
   { id:"calamar", nombre:"Calamar", deck:"ambos", tokens:2,
     nota:"Dos tokens. Afecta a todos los rivales (no afecta a Bala o Estrella). Impide subir marcha al final del turno.",
-    copias_delanteros: 1, copias_rezagados: 2 },
+    copias_delanteros: 2, copias_rezagados: 2 },
 
-  { id:"champi", nombre:"Champiñón", deck:"ambos", tokens:1,
+  { id:"champi", nombre:"Champiñón", deck:"rezagados", tokens:1,
     nota:"Al activar: +2 marchas y duplica bonif o el mayor dado (a elección). Si estrella durante su uso, causa FC.",
-    copias_delanteros: 4, copias_rezagados: 4 },
+    copias_delanteros: 5, copias_rezagados: 3 },
 
   { id:"champix3", nombre:"Champiñón x3", deck:"ambos", tokens:3,
     nota:"Versión de 3 usos del Champiñón. Puede causar FC al estrellar.",
-    copias_delanteros: 4, copias_rezagados: 4 },
+    copias_delanteros: 2, copias_rezagados: 3 },
 
   { id:"estrella", nombre:"Estrella", deck:"ambos", tokens:1,
     nota:"Dos tokens de turno. +2 marchas. No tira dados: avanza 12 + bonif. Si estrella a alguien, causa FC.",
-    copias_delanteros: 1, copias_rezagados: 4 },
+    copias_delanteros: 1, copias_rezagados: 2 },
 
   { id:"bala", nombre:"Joe Bala", deck:"rezagados", tokens:2,
     nota:"Reemplaza ficha por token de pista; +1 marcha al activar. Avanza 12 + bonif; ignora centrífuga (en curva carril 2/3).",
@@ -230,7 +226,7 @@ const CATALOG_BASE = [
 
   { id:"caparazon-azul", nombre:"Caparazón Azul", deck:"rezagados", tokens:1,
     nota:"Persigue al líder; avanza 12 + bonif (en curva cuenta como carril 2). Causa FC a quien se cruce hasta impactar al 1º.",
-    copias_delanteros: 0, copias_rezagados: 3 },
+    copias_delanteros: 0, copias_rezagados: 2 },
 
   { id:"rayo", nombre:"Rayo", deck:"rezagados", tokens:2,
     nota:"(1) Causa FC a todos. (2) Nadie puede subir de 1ª ni lanzar poderes (no afecta a Estrella o Joe Bala).",
@@ -253,10 +249,19 @@ const DEFAULT_COUNTS = Object.fromEntries(
   }])
 );
 
+const DEFAULT_COUNTS=Object.fromEntries(
+  CATALOG_BASE.map(p=>[p.id,{delanteros:p.copias_delanteros,rezagados:p.copias_rezagados}])
+);
 const state={
-  nombre:"Jugador 1",marcha:3,fc:false,
-  jugadoresTotal:6,posicionActual:3,fase:"reponer",modoArbitro:true,
-  mano:[],activos:[],counts:DEFAULT_COUNTS,catalog:CATALOG_BASE,
+  nombre:"Jugador 1",
+  marcha:1,   // ← ahora arranca en 1ª
+  fc:false,
+  jugadoresTotal:6,
+  posicionActual:3,
+  fase:"reponer",
+  modoArbitro:true,
+  mano:[],activos:[],
+  counts:DEFAULT_COUNTS,catalog:CATALOG_BASE,
   diceCount:2,diceLog:[],hist:[],color:"#7f1d1d"
 };
 
@@ -284,34 +289,83 @@ function renderPalette(sel){
 /* ───────── Renders ───────── */
 function renderPlayer(){
   el("playerName").value=state.nombre;
-  el("fcBadge").textContent=state.fc?"FC (solo 1ª)":"OK";
+
+  // Badge FC
+  el("fcBadge").textContent = state.fc ? "FC (solo 1ª)" : "OK";
+
+  // Bonificador
   el("bonifLabel").textContent=(bonifs[state.marcha]>=0?"+":"")+bonifs[state.marcha];
 
+  // Botones de marcha con restricción: en modo árbitro SOLO en cierre
   const wrap=el("gearBtns"); wrap.innerHTML="";
+  const canChange = state.modoArbitro ? (state.fase === "cierre") : true;
+
   [1,2,3,4,5,6].forEach(g=>{
     const b=document.createElement("button");
     b.textContent=g+"ª"; b.className="btn sm";
-    if(state.fc && g!==1) b.disabled=true;
+
+    // Regla: en modo árbitro solo en cierre; fuera de árbitro, se mantiene regla de FC (solo 1ª).
+    let disabled = false;
+    if (state.modoArbitro && !canChange) disabled = true;
+    if (!state.modoArbitro && state.fc && g !== 1) disabled = true;
+
+    b.disabled = disabled;
+    b.title = disabled
+      ? (state.modoArbitro ? "Sólo puedes cambiar marcha en CIERRE (Árbitro)" : "En FC sólo 1ª")
+      : ("Marcha " + g);
+
     if(state.marcha===g){ b.style.background="#fff"; b.style.color="#111"; }
     b.onclick=()=>{ if(!b.disabled){ state.marcha=g; renderPlayer(); } };
     wrap.appendChild(b);
   });
 }
+
 function renderArb(){
   el("deckSuggested").textContent=sugerirDeck(state.posicionActual,state.jugadoresTotal);
   el("phaseLabel").textContent=state.fase;
   el("arbToggle").checked=state.modoArbitro;
 }
+
 function renderDiceLog(){
   const ul=el("diceLog"); ul.innerHTML="";
   if(state.diceLog.length===0){ ul.innerHTML="<li class='muted'>— Sin tiradas —</li>"; return; }
   state.diceLog.forEach(l=>{ const li=document.createElement("li"); li.textContent=l; ul.appendChild(li); });
 }
+
 function renderHistory(){
   const ul=el("history"); ul.innerHTML="";
   if(state.hist.length===0){ ul.innerHTML="<li class='muted'>— Sin eventos —</li>"; return; }
   state.hist.forEach(l=>{ const li=document.createElement("li"); li.textContent=l; ul.appendChild(li); });
 }
+
+function spendOneToken(){
+  if(!state.activos.length) return;
+  const slot = state.activos[0];
+  if(slot.tokensRestantes == null) return;
+  // (opcional) restringir gasto a fases de acción:
+  // if(state.modoArbitro && !["accion1","accion2"].includes(state.fase)){ pushHist("Sólo puedes gastar tokens en acción"); return; }
+
+  if(slot.tokensRestantes <= 1){
+    pushHist(`Finaliza: ${slot.power.nombre}`);
+    state.activos = [];
+  } else {
+    slot.tokensRestantes -= 1;
+    pushHist(`Gastas 1 token de ${slot.power.nombre} → quedan ${slot.tokensRestantes}`);
+  }
+  renderPowers();
+}
+
+function spendAllTokens(){
+  if(!state.activos.length) return;
+  const slot = state.activos[0];
+  if(slot.tokensRestantes == null) return;
+  // if(state.modoArbitro && !["accion1","accion2"].includes(state.fase)){ pushHist("Sólo puedes gastar tokens en acción"); return; }
+
+  pushHist(`Agotas todos los tokens de ${slot.power.nombre}`);
+  state.activos = [];
+  renderPowers();
+}
+
 function renderPowers(){
   const hand=el("handList"); hand.innerHTML="";
   if(state.mano.length===0){
@@ -329,8 +383,21 @@ function renderPowers(){
       </div>
     </li>`;
     el("activateBtn").onclick=()=>{
-      state.activos=[{power:p,tokensRestantes:(p.tokens==="instant"?null:p.tokens)}];
-      state.mano=[]; pushHist("Activado: "+p.nombre); renderPowers();
+      const card = state.mano[0];
+      if(!card) return;
+
+      // (opcional) limitar activación a fases de acción:
+      // if(state.modoArbitro && !["accion1","accion2"].includes(state.fase)){ pushHist("Sólo puedes activar en acción"); return; }
+
+      if(card.tokens === "instant"){
+        pushHist(`Poder instantáneo: ${card.nombre}`);
+        state.mano = [];
+        renderPowers();
+        return;
+      }
+      state.activos=[{power:card,tokensRestantes:Number(card.tokens)}];
+      state.mano=[]; pushHist(`Activado: ${card.nombre} (${card.tokens} token${card.tokens===1?"":"s"})`);
+      renderPowers();
     };
   }
 
@@ -339,69 +406,17 @@ function renderPowers(){
     active.innerHTML="<li class='muted'>— Ninguno —</li>";
   } else {
     const slot=state.activos[0];
+    const rollBtn = slot.power.requiresRoll && Number(slot.power.requiresRoll) > 0
+      ? `<button id="rollActiveBtn" class="btn sm">Tirar ${slot.power.requiresRoll}d6</button>`
+      : "";
     active.innerHTML=`<li class="card" style="padding:8px">
       <div class="space">
         <div>
           <div style="font-weight:700">${slot.power.nombre}</div>
-          <div class="muted">${slot.tokensRestantes===null?"instantáneo":(slot.tokensRestantes+" token(s) restantes")}</div>
+          <div class="muted">${slot.tokensRestantes==null?"instantáneo":(slot.tokensRestantes+" token(s) restantes")}</div>
           ${slot.power.nota?`<div style="font-size:12px;margin-top:4px">${slot.power.nota}</div>`:""}
         </div>
-      </div>
-    </li>`;
-  }
-}
-
-/* ───────── Lógica de dados (incluye derrape) ───────── */
-function roll2d6(){
-  if(state.fc){ pushHist("No puedes lanzar: FC"); return; }
-  if(state.modoArbitro && state.fase!=="lanzar"){ pushHist("No es fase de lanzar"); return; }
-  const d1=rollDie(6), d2=rollDie(6);
-  const total=d1+d2+bonifs[state.marcha];
-  const derrapes=[d1,d2].filter(v=>v===5||v===2).length; // +1D por cada 2 o 5
-  pushHist(`2d6 (${d1}+${d2}) + bonif(${bonifs[state.marcha]}) = ${total}${derrapes?` → Derrape +${derrapes}D`:""}`);
-  pushDice(`Movimiento: ${total}${derrapes?` +${derrapes}D`:""}`);
-}
-function rollNd6(n,tag){
-  const vals=[]; for(let i=0;i<n;i++) vals.push(rollDie(6));
-  const total=vals.reduce((a,b)=>a+b,0);
-  pushHist(`${n}d6${tag?(" ["+tag+"]"):""}: ${vals.join(" + ")} = ${total}`);
-  pushDice(`${n}d6: ${total}`);
-}
-
-/* ───────── Eventos ───────── */
-el("roll2d6Btn").onclick=roll2d6;
-el("rollGenericBtn").onclick=()=>rollNd6(state.diceCount);
-el("diceCount").onchange=()=>{ state.diceCount=+el("diceCount").value; };
-el("fcBtn").onclick=()=>{ state.fc=!state.fc; if(state.fc) state.marcha=1; renderPlayer(); };
-el("playerName").oninput=()=>{ state.nombre=el("playerName").value; };
-el("arbToggle").onchange=()=>{ state.modoArbitro=el("arbToggle").checked; };
-el("totalPlayers").oninput=()=>{ state.jugadoresTotal=Math.max(1,+el("totalPlayers").value||1); renderArb(); };
-el("position").oninput=()=>{ state.posicionActual=Math.max(1, +el("position").value||1); renderArb(); };
-el("nextPhaseBtn").onclick=()=>{
-  const order=["reponer","accion1","lanzar","accion2","cierre"];
-  state.fase=order[(order.indexOf(state.fase)+1)%order.length];
-  renderArb(); renderPlayer();
-};
-el("resetTurnBtn").onclick=()=>{ state.fase="reponer"; renderArb(); renderPlayer(); };
-
-el("drawSuggestedBtn").onclick=()=>{
-  if(state.mano.length){ pushHist("Ya tienes carta"); return; }
-  const deck=sugerirDeck(state.posicionActual,state.jugadoresTotal);
-  const pool=state.catalog.filter(p=>p.deck===deck || p.deck==="ambos");
-  const total=pool.reduce((a,p)=>a+(state.counts[p.id][deck]||0),0);
-  if(total===0){ pushHist("Mazo vacío"); return; }
-  let r=Math.floor(Math.random()*total);
-  for(const p of pool){
-    r-=(state.counts[p.id][deck]||0);
-    if(r<0){ state.mano=[p]; pushHist("Robas: "+p.nombre+" — "+(p.nota||"")); break; }
-  }
-  renderPowers();
-};
-el("discardHandBtn").onclick=()=>{ if(state.mano.length){ state.mano=[]; pushHist("Descartas mano"); renderPowers(); } };
-
-/* ───────── Init ───────── */
-renderPalette(state.color);
-renderPlayer(); renderArb(); renderPowers(); renderDiceLog(); renderHistory();
-</script>
-</body>
-</html>
+        <div class="flex">
+          ${slot.tokensRestantes!=null?`
+            <button id="spend1Btn" class="btn sm">Gastar 1</button>
+            <button id="spendAllBtn" class="btn sm">Gastar todos
