@@ -10,7 +10,7 @@
     --card:rgba(255,255,255,.06); --border:rgba(255,255,255,.15);
     --txt:#e5e7eb; --muted:#cbd5e1;
     --rad:14px; --pad:12px; --gap:12px; --gap-sm:8px;
-    --h-panel:200px;
+    --h-panel:220px;
   }
   *{box-sizing:border-box}
   html,body{height:100%}
@@ -42,6 +42,8 @@
   .color-swatch{width:22px;height:22px;border-radius:6px;border:2px solid transparent;cursor:pointer}
   .color-swatch.active{border-color:#fff}
   .gearbar .btn{min-width:40px}
+  /* Notas completas, sin truncar */
+  .nota{white-space:pre-wrap; word-break:break-word; font-size:12px; margin-top:4px}
 </style>
 </head>
 <body>
@@ -91,7 +93,7 @@
 
         <div class="space">
           <h2 class="title">Marcha actual</h2>
-          <div class="muted">Bonificador: <b id="bonifLabel">+2</b></div>
+          <div class="muted">Bonificador: <b id="bonifLabel">+0</b></div>
         </div>
         <div id="gearBtns" class="flex gearbar" style="flex-wrap:wrap"></div>
 
@@ -154,11 +156,23 @@
   </div>
 
 <script>
-/* ───────── Datos base y estado ───────── */
-const bonifs={1:0,2:1,3:2,4:3,5:4,6:5};
+/* ───────── Colores ───────── */
 const COLOR_OPTIONS=["#0f172a","#1d4ed8","#047857","#7c2d12","#4a044e","#581c87","#14532d","#7f1d1d","#312e81","#1f2937"];
+function setTheme(c){
+  document.body.style.background=`linear-gradient(to bottom, ${c}, #000)`;
+  state.color=c; renderPalette(c);
+}
+function renderPalette(sel){
+  const pal=document.getElementById("colorPalette"); pal.innerHTML="";
+  COLOR_OPTIONS.forEach(c=>{
+    const b=document.createElement("button");
+    b.className="color-swatch"+(c===sel?" active":"");
+    b.style.background=c; b.onclick=()=>setTheme(c);
+    pal.appendChild(b);
+  });
+}
 
-c/* ── Catálogo completo con copias por mazo ── */
+/* ───────── Catálogo (TAL CUAL LO ENTREGASTE) ───────── */
 const CATALOG_BASE = [
   { id:"escudo-1", nombre:"Caparazón verde", deck:"ambos", tokens:1,
     nota:"Viaja en línea recta 12 casillas por turno hasta centrifugarse. Sirve como escudo. CAUSA FC.",
@@ -241,27 +255,19 @@ const CATALOG_BASE = [
     copias_delanteros: 5, copias_rezagados: 2 }
 ];
 
-/* Construye los conteos fijos desde el catálogo */
+/* Conteos fijos derivados del catálogo */
 const DEFAULT_COUNTS = Object.fromEntries(
-  CATALOG_BASE.map(p => [p.id, {
-    delanteros: (typeof p.copias_delanteros === "number") ? p.copias_delanteros : (p.deck !== "rezagados" ? 1 : 0),
-    rezagados: (typeof p.copias_rezagados === "number") ? p.copias_rezagados : (p.deck !== "delanteros" ? 1 : 0),
-  }])
+  CATALOG_BASE.map(p => [p.id, {delanteros: p.copias_delanteros, rezagados: p.copias_rezagados}])
 );
 
-const DEFAULT_COUNTS=Object.fromEntries(
-  CATALOG_BASE.map(p=>[p.id,{delanteros:p.copias_delanteros,rezagados:p.copias_rezagados}])
-);
+/* ───────── Estado ───────── */
+const bonifs={1:0,2:1,3:2,4:3,5:4,6:5};
 const state={
   nombre:"Jugador 1",
-  marcha:1,   // ← ahora arranca en 1ª
+  marcha:1,         // siempre inicia en 1ª
   fc:false,
-  jugadoresTotal:6,
-  posicionActual:3,
-  fase:"reponer",
-  modoArbitro:true,
-  mano:[],activos:[],
-  counts:DEFAULT_COUNTS,catalog:CATALOG_BASE,
+  jugadoresTotal:6,posicionActual:3,fase:"reponer",modoArbitro:true,
+  mano:[],activos:[],counts:DEFAULT_COUNTS,catalog:CATALOG_BASE,
   diceCount:2,diceLog:[],hist:[],color:"#7f1d1d"
 };
 
@@ -270,114 +276,63 @@ function el(id){return document.getElementById(id);}
 function pushHist(msg){state.hist.unshift(msg);renderHistory();}
 function pushDice(msg){state.diceLog.unshift(msg);renderDiceLog();}
 function sugerirDeck(pos,total){return pos<=Math.floor(total/2)?"delanteros":"rezagados";}
-function rollDie(sides){return 1+Math.floor(Math.random()*sides);}
+function rollDie(s){return 1+Math.floor(Math.random()*s);}
 
-function setTheme(c){
-  document.body.style.background=`linear-gradient(to bottom, ${c}, #000)`;
-  state.color=c; renderPalette(c);
-}
-function renderPalette(sel){
-  const pal=el("colorPalette"); pal.innerHTML="";
-  COLOR_OPTIONS.forEach(c=>{
-    const b=document.createElement("button");
-    b.className="color-swatch"+(c===sel?" active":"");
-    b.style.background=c; b.onclick=()=>setTheme(c);
-    pal.appendChild(b);
-  });
-}
-
-/* ───────── Renders ───────── */
+/* ───────── Render ───────── */
 function renderPlayer(){
   el("playerName").value=state.nombre;
-
-  // Badge FC
   el("fcBadge").textContent = state.fc ? "FC (solo 1ª)" : "OK";
-
-  // Bonificador
   el("bonifLabel").textContent=(bonifs[state.marcha]>=0?"+":"")+bonifs[state.marcha];
 
-  // Botones de marcha con restricción: en modo árbitro SOLO en cierre
   const wrap=el("gearBtns"); wrap.innerHTML="";
-  const canChange = state.modoArbitro ? (state.fase === "cierre") : true;
+  const onlyInCierre = state.modoArbitro;       // si árbitro activo, sólo en cierre
+  const canChange = onlyInCierre ? (state.fase === "cierre") : true;
 
   [1,2,3,4,5,6].forEach(g=>{
     const b=document.createElement("button");
     b.textContent=g+"ª"; b.className="btn sm";
 
-    // Regla: en modo árbitro solo en cierre; fuera de árbitro, se mantiene regla de FC (solo 1ª).
-    let disabled = false;
-    if (state.modoArbitro && !canChange) disabled = true;
-    if (!state.modoArbitro && state.fc && g !== 1) disabled = true;
+    let disabled=false;
+    if (onlyInCierre && !canChange) disabled=true;            // árbitro: sólo cierre
+    if (!onlyInCierre && state.fc && g!==1) disabled=true;    // sin árbitro: FC limita
 
     b.disabled = disabled;
     b.title = disabled
-      ? (state.modoArbitro ? "Sólo puedes cambiar marcha en CIERRE (Árbitro)" : "En FC sólo 1ª")
-      : ("Marcha " + g);
+      ? (onlyInCierre ? "Sólo puedes cambiar marcha en CIERRE (Árbitro)" : "En FC sólo 1ª")
+      : ("Marcha "+g);
 
     if(state.marcha===g){ b.style.background="#fff"; b.style.color="#111"; }
     b.onclick=()=>{ if(!b.disabled){ state.marcha=g; renderPlayer(); } };
     wrap.appendChild(b);
   });
 }
-
 function renderArb(){
   el("deckSuggested").textContent=sugerirDeck(state.posicionActual,state.jugadoresTotal);
   el("phaseLabel").textContent=state.fase;
   el("arbToggle").checked=state.modoArbitro;
 }
-
 function renderDiceLog(){
   const ul=el("diceLog"); ul.innerHTML="";
   if(state.diceLog.length===0){ ul.innerHTML="<li class='muted'>— Sin tiradas —</li>"; return; }
   state.diceLog.forEach(l=>{ const li=document.createElement("li"); li.textContent=l; ul.appendChild(li); });
 }
-
 function renderHistory(){
   const ul=el("history"); ul.innerHTML="";
   if(state.hist.length===0){ ul.innerHTML="<li class='muted'>— Sin eventos —</li>"; return; }
   state.hist.forEach(l=>{ const li=document.createElement("li"); li.textContent=l; ul.appendChild(li); });
 }
-
-function spendOneToken(){
-  if(!state.activos.length) return;
-  const slot = state.activos[0];
-  if(slot.tokensRestantes == null) return;
-  // (opcional) restringir gasto a fases de acción:
-  // if(state.modoArbitro && !["accion1","accion2"].includes(state.fase)){ pushHist("Sólo puedes gastar tokens en acción"); return; }
-
-  if(slot.tokensRestantes <= 1){
-    pushHist(`Finaliza: ${slot.power.nombre}`);
-    state.activos = [];
-  } else {
-    slot.tokensRestantes -= 1;
-    pushHist(`Gastas 1 token de ${slot.power.nombre} → quedan ${slot.tokensRestantes}`);
-  }
-  renderPowers();
-}
-
-function spendAllTokens(){
-  if(!state.activos.length) return;
-  const slot = state.activos[0];
-  if(slot.tokensRestantes == null) return;
-  // if(state.modoArbitro && !["accion1","accion2"].includes(state.fase)){ pushHist("Sólo puedes gastar tokens en acción"); return; }
-
-  pushHist(`Agotas todos los tokens de ${slot.power.nombre}`);
-  state.activos = [];
-  renderPowers();
-}
-
 function renderPowers(){
   const hand=el("handList"); hand.innerHTML="";
   if(state.mano.length===0){
     hand.innerHTML="<li class='muted'>— Sin cartas —</li>";
   } else {
     const p=state.mano[0];
-    hand.innerHTML=`<li class="card" style="padding:8px">
+    hand.innerHTML = `<li class="card" style="padding:8px">
       <div class="space">
         <div>
           <div style="font-weight:700">${p.nombre}</div>
           <div class="muted">${p.deck} · ${p.tokens==="instant"?"instantáneo":(p.tokens+" token(s)")}</div>
-          ${p.nota?`<div style="font-size:12px;margin-top:4px">${p.nota}</div>`:""}
+          ${p.nota ? `<div class="nota">${p.nota}</div>` : ""}
         </div>
         <button id="activateBtn" class="btn sm">Activar</button>
       </div>
@@ -385,10 +340,6 @@ function renderPowers(){
     el("activateBtn").onclick=()=>{
       const card = state.mano[0];
       if(!card) return;
-
-      // (opcional) limitar activación a fases de acción:
-      // if(state.modoArbitro && !["accion1","accion2"].includes(state.fase)){ pushHist("Sólo puedes activar en acción"); return; }
-
       if(card.tokens === "instant"){
         pushHist(`Poder instantáneo: ${card.nombre}`);
         state.mano = [];
@@ -406,17 +357,117 @@ function renderPowers(){
     active.innerHTML="<li class='muted'>— Ninguno —</li>";
   } else {
     const slot=state.activos[0];
-    const rollBtn = slot.power.requiresRoll && Number(slot.power.requiresRoll) > 0
-      ? `<button id="rollActiveBtn" class="btn sm">Tirar ${slot.power.requiresRoll}d6</button>`
-      : "";
-    active.innerHTML=`<li class="card" style="padding:8px">
+    active.innerHTML = `<li class="card" style="padding:8px">
       <div class="space">
         <div>
           <div style="font-weight:700">${slot.power.nombre}</div>
           <div class="muted">${slot.tokensRestantes==null?"instantáneo":(slot.tokensRestantes+" token(s) restantes")}</div>
-          ${slot.power.nota?`<div style="font-size:12px;margin-top:4px">${slot.power.nota}</div>`:""}
+          ${slot.power.nota ? `<div class="nota">${slot.power.nota}</div>` : ""}
         </div>
         <div class="flex">
           ${slot.tokensRestantes!=null?`
             <button id="spend1Btn" class="btn sm">Gastar 1</button>
-            <button id="spendAllBtn" class="btn sm">Gastar todos
+            <button id="spendAllBtn" class="btn sm">Gastar todos</button>`:""}
+        </div>
+      </div>
+    </li>`;
+    if(slot.tokensRestantes!=null){
+      el("spend1Btn").onclick=spendOneToken;
+      el("spendAllBtn").onclick=spendAllTokens;
+    }
+  }
+}
+
+/* ───────── Tokens activos ───────── */
+function spendOneToken(){
+  if(!state.activos.length) return;
+  const slot = state.activos[0];
+  if(slot.tokensRestantes == null) return;
+  if(slot.tokensRestantes <= 1){
+    pushHist(`Finaliza: ${slot.power.nombre}`);
+    state.activos = [];
+  } else {
+    slot.tokensRestantes -= 1;
+    pushHist(`Gastas 1 token de ${slot.power.nombre} → quedan ${slot.tokensRestantes}`);
+  }
+  renderPowers();
+}
+function spendAllTokens(){
+  if(!state.activos.length) return;
+  const slot = state.activos[0];
+  if(slot.tokensRestantes == null) return;
+  pushHist(`Agotas todos los tokens de ${slot.power.nombre}`);
+  state.activos = [];
+  renderPowers();
+}
+
+/* ───────── Dados (derrape en movimiento) ───────── */
+function roll2d6(){
+  if(state.fc){ pushHist("No puedes lanzar: FC"); return; }
+  if(state.modoArbitro && state.fase!=="lanzar"){ pushHist("No es fase de lanzar"); return; }
+  const d1=rollDie(6), d2=rollDie(6);
+  const total = d1 + d2 + bonifs[state.marcha];
+  const derrapes = [d1,d2].filter(v=>v===2||v===5).length;  // +1D por cada 2 o 5
+  pushHist(`2d6 (${d1}+${d2}) + bonif(${bonifs[state.marcha]}) = ${total}${derrapes?` → Derrape +${derrapes}D`:""}`);
+  pushDice(`Movimiento: ${total}${derrapes?` +${derrapes}D`:""}`);
+}
+function rollNd6(n,tag){
+  const vals=[]; for(let i=0;i<n;i++) vals.push(rollDie(6));
+  const total=vals.reduce((a,b)=>a+b,0);
+  pushHist(`${n}d6${tag?(" ["+tag+"]"):""}: ${vals.join(" + ")} = ${total}`);
+  pushDice(`${n}d6: ${total}`);
+}
+
+/* ───────── Robar de mazo sugerido (ponderado por copias) ───────── */
+function drawSuggested(){
+  if(state.mano.length){ pushHist("Ya tienes carta en mano"); return; }
+  const deck=sugerirDeck(state.posicionActual,state.jugadoresTotal); // "delanteros" o "rezagados"
+  const pool=state.catalog.filter(p=>p.deck===deck || p.deck==="ambos");
+  const total=pool.reduce((a,p)=>a+(state.counts[p.id]?.[deck]||0),0);
+  if(total<=0){ pushHist("No hay cartas disponibles en el mazo sugerido"); return; }
+  let r=Math.floor(Math.random()*total);
+  for(const p of pool){
+    r-=(state.counts[p.id]?.[deck]||0);
+    if(r<0){
+      state.mano=[p];
+      pushHist(`Robas: ${p.nombre} — ${p.nota}`);
+      renderPowers();
+      return;
+    }
+  }
+}
+
+/* ───────── Eventos UI ───────── */
+document.getElementById("roll2d6Btn").onclick=roll2d6;
+document.getElementById("rollGenericBtn").onclick=()=>rollNd6(state.diceCount);
+document.getElementById("diceCount").onchange=()=>{ state.diceCount=+document.getElementById("diceCount").value; };
+
+document.getElementById("fcBtn").onclick=()=>{
+  state.fc=!state.fc;
+  if(state.fc) state.marcha=1; // entrar a FC fuerza 1ª
+  renderPlayer();
+};
+
+document.getElementById("playerName").oninput=()=>{ state.nombre=document.getElementById("playerName").value; };
+
+document.getElementById("arbToggle").onchange=()=>{ state.modoArbitro=document.getElementById("arbToggle").checked; renderPlayer(); };
+
+document.getElementById("totalPlayers").oninput=()=>{ state.jugadoresTotal=Math.max(1,+document.getElementById("totalPlayers").value||1); renderArb(); };
+document.getElementById("position").oninput=()=>{ state.posicionActual=Math.max(1,+document.getElementById("position").value||1); renderArb(); };
+
+document.getElementById("nextPhaseBtn").onclick=()=>{
+  const order=["reponer","accion1","lanzar","accion2","cierre"];
+  state.fase=order[(order.indexOf(state.fase)+1)%order.length];
+  renderArb(); renderPlayer();
+};
+document.getElementById("resetTurnBtn").onclick=()=>{ state.fase="reponer"; renderArb(); renderPlayer(); };
+
+document.getElementById("drawSuggestedBtn").onclick=drawSuggested;
+document.getElementById("discardHandBtn").onclick=()=>{ if(state.mano.length){ state.mano=[]; pushHist("Descartas la mano"); renderPowers(); } };
+
+/* ───────── Init ───────── */
+function renderAll(){ renderPalette(state.color); renderPlayer(); renderArb(); renderPowers(); renderDiceLog(); renderHistory(); }
+renderAll();
+</script>
+</body>
+</html>
