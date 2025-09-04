@@ -17,13 +17,16 @@
     .pill {padding:4px 10px;border-radius:999px;background:rgba(255,255,255,0.15);font-size:12px}
     .list {list-style:none;margin:0;padding:0;display:grid;gap:6px}
     .muted {font-size:13px;color:#bbb}
+    .flex {display:flex;gap:8px;align-items:center}
+    .color-swatch{width:22px;height:22px;border-radius:6px;border:2px solid transparent;cursor:pointer}
+    .color-swatch.active{border-color:#fff}
   </style>
 </head>
 <body>
   <div class="container">
-    <header>
+    <header class="flex space-between">
       <h1>Umbra Kart</h1>
-      <div class="muted">Panel lateral de jugador</div>
+      <div id="colorPalette" class="flex"></div>
     </header>
 
     <div class="row">
@@ -31,9 +34,10 @@
         <!-- Árbitro -->
         <section class="card">
           <div class="title">Modo Árbitro y fases</div>
-          <div>
-            <label>Jugadores <input id="totalPlayers" type="number" value="6"/></label>
-            <label>Posición <input id="position" type="number" value="3"/></label>
+          <label class="flex"><input id="arbToggle" type="checkbox" checked/> Activado</label>
+          <div class="flex">
+            <label>Jugadores <input id="totalPlayers" type="number" value="6" min="1"/></label>
+            <label>Posición <input id="position" type="number" value="3" min="1"/></label>
           </div>
           <div>Mazo sugerido: <span id="deckSuggested" class="pill">delanteros</span></div>
           <div>Fase: <b id="phaseLabel">reponer</b></div>
@@ -50,12 +54,19 @@
 
           <div class="title">Marcha actual</div>
           <div>Bonificador: <b id="bonifLabel">+2</b></div>
-          <div id="gearBtns"></div>
+          <div id="gearBtns" class="flex"></div>
 
           <div class="title">Lanzar 2d6 + bonif</div>
           <button id="roll2d6Btn" class="btn primary">Lanzar 2d6</button>
 
           <div class="title">Tiradas</div>
+          <div class="flex">
+            <label>Dados <select id="diceCount">
+              <option value="1">1</option><option value="2" selected>2</option>
+              <option value="3">3</option><option value="4">4</option>
+            </select></label>
+            <button id="rollGenericBtn" class="btn">Tirar</button>
+          </div>
           <ul id="diceLog" class="list"></ul>
         </section>
       </div>
@@ -85,14 +96,12 @@
 
 <script>
 const bonifs={1:0,2:1,3:2,4:3,5:4,6:5};
+const COLOR_OPTIONS=["#0f172a","#1d4ed8","#047857","#7c2d12","#4a044e","#581c87","#14532d","#7f1d1d","#312e81","#1f2937"];
 
 const CATALOG_BASE=[
-  {id:"escudo-1",nombre:"Caparazón verde",deck:"ambos",tokens:1,
-   nota:"Viaja recto 12 casillas, escudo, CAUSA FC",copias_delanteros:2,copias_rezagados:2},
-  {id:"bomba",nombre:"Bomba",deck:"ambos",tokens:2,
-   nota:"Explota al agotar tokens o manual. Radio 2. CAUSA FC",copias_delanteros:1,copias_rezagados:1},
-  {id:"caparazon-azul",nombre:"Caparazón Azul",deck:"rezagados",tokens:1,
-   nota:"Persigue al 1º, avanza 12+bonif, causa FC",copias_delanteros:0,copias_rezagados:2}
+  {id:"escudo-1",nombre:"Caparazón verde",deck:"ambos",tokens:1,nota:"Viaja recto 12 casillas, escudo, CAUSA FC",copias_delanteros:2,copias_rezagados:2},
+  {id:"bomba",nombre:"Bomba",deck:"ambos",tokens:2,nota:"Explota al agotar tokens o manual. Radio 2. CAUSA FC",copias_delanteros:1,copias_rezagados:1},
+  {id:"caparazon-azul",nombre:"Caparazón Azul",deck:"rezagados",tokens:1,nota:"Persigue al 1º, avanza 12+bonif, causa FC",copias_delanteros:0,copias_rezagados:2}
 ];
 
 const DEFAULT_COUNTS=Object.fromEntries(
@@ -100,9 +109,9 @@ const DEFAULT_COUNTS=Object.fromEntries(
 );
 
 const state={nombre:"Jugador 1",marcha:3,fc:false,
-  jugadoresTotal:6,posicionActual:3,fase:"reponer",
-  mano:[],activos:[],counts:DEFAULT_COUNTS,
-  catalog:CATALOG_BASE,diceLog:[],hist:[]};
+  jugadoresTotal:6,posicionActual:3,fase:"reponer",modoArbitro:true,
+  mano:[],activos:[],counts:DEFAULT_COUNTS,catalog:CATALOG_BASE,
+  diceCount:2,diceLog:[],hist:[],color:"#7f1d1d"};
 
 function el(id){return document.getElementById(id);}
 function pushHist(msg){state.hist.unshift(msg);renderHistory();}
@@ -110,6 +119,19 @@ function pushDice(msg){state.diceLog.unshift(msg);renderDiceLog();}
 
 function sugerirDeck(pos,total){return pos<=Math.floor(total/2)?"delanteros":"rezagados";}
 function rollDie(sides){return 1+Math.floor(Math.random()*sides);}
+
+function setTheme(c){
+  document.body.style.background=`linear-gradient(${c}, #000)`;
+  state.color=c;renderPalette(c);
+}
+function renderPalette(sel){
+  const pal=el("colorPalette");pal.innerHTML="";
+  COLOR_OPTIONS.forEach(c=>{
+    const b=document.createElement("button");
+    b.className="color-swatch"+(c===sel?" active":"");
+    b.style.background=c;b.onclick=()=>setTheme(c);pal.appendChild(b);
+  });
+}
 
 function renderPlayer(){
   el("playerName").value=state.nombre;
@@ -125,44 +147,60 @@ function renderPlayer(){
     gearBtns.appendChild(b);
   });
 }
-
-function renderArb(){el("deckSuggested").textContent=sugerirDeck(state.posicionActual,state.jugadoresTotal);
-  el("phaseLabel").textContent=state.fase;}
-
-function renderDiceLog(){const ul=el("diceLog");ul.innerHTML="";
+function renderArb(){
+  el("deckSuggested").textContent=sugerirDeck(state.posicionActual,state.jugadoresTotal);
+  el("phaseLabel").textContent=state.fase;
+  el("arbToggle").checked=state.modoArbitro;
+}
+function renderDiceLog(){
+  const ul=el("diceLog");ul.innerHTML="";
   if(state.diceLog.length===0){ul.innerHTML="<li class='muted'>— Sin tiradas —</li>";return;}
   state.diceLog.forEach(l=>{const li=document.createElement("li");li.textContent=l;ul.appendChild(li);});
 }
-
-function renderHistory(){const ul=el("history");ul.innerHTML="";
+function renderHistory(){
+  const ul=el("history");ul.innerHTML="";
   if(state.hist.length===0){ul.innerHTML="<li class='muted'>— Sin eventos —</li>";return;}
   state.hist.forEach(l=>{const li=document.createElement("li");li.textContent=l;ul.appendChild(li);});
 }
-
 function renderPowers(){
   const hand=el("handList");hand.innerHTML="";
   if(state.mano.length===0){hand.innerHTML="<li class='muted'>— Sin cartas —</li>";}
-  else {const p=state.mano[0];hand.innerHTML=`<li><b>${p.nombre}</b><div class="muted">${p.deck} · ${p.tokens} tokens</div><div>${p.nota}</div><button id="activateBtn" class="btn">Activar</button></li>`;
-    el("activateBtn").onclick=()=>{state.activos=[{power:p,tokensRestantes:p.tokens}];state.mano=[];pushHist("Activado: "+p.nombre);renderPowers();};}
-
+  else {const p=state.mano[0];
+    hand.innerHTML=`<li><b>${p.nombre}</b><div class="muted">${p.deck} · ${p.tokens} tokens</div><div>${p.nota}</div><button id="activateBtn" class="btn">Activar</button></li>`;
+    el("activateBtn").onclick=()=>{state.activos=[{power:p,tokensRestantes:p.tokens}];state.mano=[];pushHist("Activado: "+p.nombre);renderPowers();};
+  }
   const active=el("activeList");active.innerHTML="";
   if(state.activos.length===0){active.innerHTML="<li class='muted'>— Ninguno —</li>";}
-  else {const slot=state.activos[0];active.innerHTML=`<li><b>${slot.power.nombre}</b><div>${slot.tokensRestantes} tokens restantes</div><div>${slot.power.nota}</div></li>`;}
+  else {const slot=state.activos[0];
+    active.innerHTML=`<li><b>${slot.power.nombre}</b><div>${slot.tokensRestantes} tokens restantes</div><div>${slot.power.nota}</div></li>`;
+  }
 }
 
 function roll2d6(){
   if(state.fc){pushHist("No puedes lanzar: FC");return;}
-  if(state.fase!=="lanzar"){pushHist("No es fase de lanzar");return;}
+  if(state.modoArbitro && state.fase!=="lanzar"){pushHist("No es fase de lanzar");return;}
   const d1=rollDie(6),d2=rollDie(6);
   const total=d1+d2+bonifs[state.marcha];
   const derrapes=[d1,d2].filter(v=>v===5||v===2).length;
   pushHist(`2d6 (${d1}+${d2}) + bonif(${bonifs[state.marcha]}) = ${total}${derrapes?` → Derrape +${derrapes}D`:""}`);
   pushDice(`Movimiento: ${total}${derrapes?` +${derrapes}D`:""}`);
 }
+function rollNd6(n,tag){
+  const vals=[];for(let i=0;i<n;i++) vals.push(rollDie(6));
+  const total=vals.reduce((a,b)=>a+b,0);
+  pushHist(`${n}d6${tag?(" ["+tag+"]"):""}: ${vals.join("+")} = ${total}`);
+  pushDice(`${n}d6: ${total}`);
+}
 
+// eventos
 el("roll2d6Btn").onclick=roll2d6;
+el("rollGenericBtn").onclick=()=>rollNd6(state.diceCount);
+el("diceCount").onchange=()=>{state.diceCount=+el("diceCount").value;};
 el("fcBtn").onclick=()=>{state.fc=!state.fc;if(state.fc)state.marcha=1;renderPlayer();};
 el("playerName").oninput=()=>{state.nombre=el("playerName").value;};
+el("arbToggle").onchange=()=>{state.modoArbitro=el("arbToggle").checked;};
+el("totalPlayers").oninput=()=>{state.jugadoresTotal=+el("totalPlayers").value;renderArb();};
+el("position").oninput=()=>{state.posicionActual=+el("position").value;renderArb();};
 el("nextPhaseBtn").onclick=()=>{const order=["reponer","accion1","lanzar","accion2","cierre"];state.fase=order[(order.indexOf(state.fase)+1)%order.length];renderArb();};
 el("resetTurnBtn").onclick=()=>{state.fase="reponer";renderArb();};
 el("drawSuggestedBtn").onclick=()=>{
@@ -172,12 +210,13 @@ el("drawSuggestedBtn").onclick=()=>{
   const total=pool.reduce((a,p)=>a+(state.counts[p.id][deck]||0),0);
   if(total===0){pushHist("Mazo vacío");return;}
   let r=Math.floor(Math.random()*total);
-  for(const p of pool){r-=(state.counts[p.id][deck]||0);if(r<0){state.mano=[p];pushHist("Robas: "+p.nombre);break;}}
+  for(const p of pool){r-=(state.counts[p.id][deck]||0);if(r<0){state.mano=[p];pushHist("Robas: "+p.nombre+" — "+p.nota);break;}}
   renderPowers();
 };
 el("discardHandBtn").onclick=()=>{if(state.mano.length){state.mano=[];pushHist("Descartas mano");renderPowers();}};
 
-renderPlayer();renderArb();renderPowers();renderDiceLog();renderHistory();
+// init
+renderPalette(state.color);renderPlayer();renderArb();renderPowers();renderDiceLog();renderHistory();
 </script>
 </body>
 </html>
