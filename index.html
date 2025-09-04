@@ -202,7 +202,7 @@
     function sugerirDeck(pos,total){ if(total<=1) return "ambos"; const frontCut=Math.floor(total/2); return pos<=frontCut?"delanteros":"rezagados"; }
     function weightedPick(rng, deck, counts, catalog){ const pool=catalog.filter(p=>p.deck===deck||p.deck==="ambos"); const weights=pool.map(p=>Math.max(0,(counts[p.id]?.[deck]??0))); const total=weights.reduce((a,b)=>a+b,0); if(total<=0) return null; let r=rng()*total; for(let i=0;i<pool.length;i++){ r-=weights[i]; if(r<=0) return pool[i]; } return pool[pool.length-1]; }
 
-    const state={ nombre:"Jugador 1",marcha:3,fc:false,seed:"",mano:[],activos:[],modoArbitro:true,jugadoresTotal:6,posicionActual:3,fase:"reponer",tomoCaja:false,counts:JSON.parse(JSON.stringify(DEFAULT_COUNTS)),admin:false,catalog:JSON.parse(JSON.stringify(CATALOG_BASE)),diceCount:2,diceLog:[],color:"#7f1d1d",hist:[] };
+    const state={ nombre:"Jugador 1",marcha:1,fc:false,seed:"",mano:[],activos:[],modoArbitro:true,jugadoresTotal:6,posicionActual:3,fase:"reponer",tomoCaja:false,counts:JSON.parse(JSON.stringify(DEFAULT_COUNTS)),admin:false,catalog:JSON.parse(JSON.stringify(CATALOG_BASE)),diceCount:2,diceLog:[],color:"#7f1d1d",hist:[] };
 
     const el=(id)=>document.getElementById(id); const colorPalette=el("colorPalette"),adminToggle=el("adminToggle"),seedInput=el("seedInput"),seedGroup=el("seedGroup");
     const playerName=el("playerName"),fcBtn=el("fcBtn"),fcBadge=el("fcBadge"),gearBtns=el("gearBtns"),bonifLabel=el("bonifLabel");
