@@ -458,17 +458,28 @@ function renderPowers(){
         <button id="activateBtn" class="btn sm">Activar</button>
       </div>
     </li>`;
-    el("activateBtn").onclick=()=>{
-      const card = state.mano[0]; if(!card) return;
-      playSnd("activate");
-      if(card.tokens === "instant"){
-        pushHist(`Poder instantáneo: ${card.nombre}`);
-        state.mano = []; renderPowers(); return;
-      }
-      state.activos=[{power:card,tokensRestantes:Number(card.tokens)}];
-      state.mano=[]; pushHist(`Activado: ${card.nombre} (${card.tokens} token${card.tokens===1?"":"s"})`);
-      renderPowers();
-    };
+  el("activateBtn").onclick=()=>{
+  const card = state.mano[0]; if(!card) return;
+  playSnd("activate");
+  // Caso especial: Carroñero
+  if (card.id === "carronero") {
+    // consumir el Carroñero (no queda activo), abrir selector
+    state.mano = [];
+    pushHist("Activado: Carroñero — elige un poder del catálogo");
+    renderPowers();
+    openCarroneroPicker();
+    return;
+  }
+  // Resto de poderes igual que antes:
+  if(card.tokens === "instant"){
+    pushHist(`Poder instantáneo: ${card.nombre}`);
+    state.mano = []; renderPowers(); return;
+  }
+  state.activos=[{power:card,tokensRestantes:Number(card.tokens)}];
+  state.mano=[]; pushHist(`Activado: ${card.nombre} (${card.tokens} token${card.tokens===1?"":"s"})`);
+  renderPowers();
+};
+
   }
   // Activo
   const active=el("activeList"); active.innerHTML="";
