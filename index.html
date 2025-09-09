@@ -1,63 +1,63 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Umbra Kart</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Umbra Kart — Panel de Jugador</title>
 <style>
   :root{
-    --bg:#7f1d1d; --bg2:#4a1d1d;
+    --bg:#7f1d1d; --bg2:#000000;
     --card:rgba(255,255,255,.06); --border:rgba(255,255,255,.15);
-    --txt:#e5e7eb; --muted:#cbd5e1;
-    --rad:14px; --pad:12px; --gap:12px; --gap-sm:8px;
-    --h-panel:220px;
+    --txt:#e5e7eb; --muted:#cbd5e1; --rad:14px; --pad:12px; --gap:12px; --gap-sm:8px;
   }
-  *{box-sizing:border-box}
-  html,body{height:100%}
+  *{box-sizing:border-box} html,body{height:100%}
   body{margin:0;font-family:ui-sans-serif,system-ui,Segoe UI,Roboto; color:var(--txt);
        background:linear-gradient(to bottom,var(--bg),var(--bg2))}
   .container{max-width:1200px;margin:0 auto;padding:var(--pad);display:grid;gap:var(--gap)}
   header{display:flex;align-items:center;justify-content:space-between;gap:var(--gap)}
+  .space{display:flex;justify-content:space-between;align-items:center;gap:var(--gap-sm)}
+  .flex{display:flex;gap:var(--gap-sm);align-items:center}
+  .grid{display:grid;gap:var(--gap-sm)}
+  .grid-2{display:grid;gap:var(--gap-sm);grid-template-columns:1fr 1fr}
+  .row{display:grid;gap:var(--gap);grid-template-columns:1fr 1fr 1fr}
+  @media (max-width:980px){ .row{grid-template-columns:1fr 1fr} }
+  @media (max-width:700px){ .row{grid-template-columns:1fr} }
   h1{margin:0;font-size:18px}
-  .row{display:grid; gap:var(--gap); grid-template-columns: 260px 1fr 360px;}
-  @media (max-width:1060px){ .row{ grid-template-columns: 1fr 1fr; } }
-  @media (max-width:720px){ .row{ grid-template-columns: 1fr; } }
+  .muted{color:var(--muted);font-size:12px}
   .card{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:var(--pad)}
   .title{margin:0 0 6px 0;font-weight:700;font-size:14px}
-  .muted{color:var(--muted);font-size:12px}
-  .pill{display:inline-block;padding:3px 8px;border-radius:999px;background:rgba(255,255,255,.14);font-size:12px}
   .btn{appearance:none;border:1px solid var(--border);background:rgba(255,255,255,.10);color:var(--txt);
-       padding:7px 10px;border-radius:10px;cursor:pointer;font-weight:600}
+       padding:8px 11px;border-radius:10px;cursor:pointer;font-weight:600}
   .btn:hover{background:rgba(255,255,255,.16)}
   .btn.primary{background:linear-gradient(to bottom right,#fecaca,#fcd34d);color:#111;border:none}
   .btn.sm{padding:6px 9px;border-radius:9px;font-size:13px}
-  input,select{width:100%;background:rgba(0,0,0,.30);color:var(--txt);border:1px solid var(--border);
-               border-radius:10px;padding:7px 10px;outline:none;font-size:14px}
-  .flex{display:flex;gap:var(--gap-sm);align-items:center}
-  .space{display:flex;justify-content:space-between;align-items:center;gap:var(--gap-sm)}
-  .grid{display:grid;gap:var(--gap-sm)}
-  .grid-2{display:grid;gap:var(--gap-sm);grid-template-columns:1fr 1fr}
+  input,select,textarea{width:100%;background:rgba(0,0,0,.30);color:var(--txt);border:1px solid var(--border);
+                        border-radius:10px;padding:8px 11px;outline:none;font-size:14px}
   .list{list-style:none;margin:0;padding:0;display:grid;gap:6px}
-  .scroll{max-height:var(--h-panel);overflow:auto;padding-right:4px;-webkit-overflow-scrolling:touch}
+  .scroll{max-height:240px;overflow:auto;padding-right:4px;-webkit-overflow-scrolling:touch}
+  .pill{display:inline-block;padding:3px 8px;border-radius:999px;background:rgba(255,255,255,.14);font-size:12px}
   .color-swatch{width:22px;height:22px;border-radius:6px;border:2px solid transparent;cursor:pointer}
   .color-swatch.active{border-color:#fff}
-  .gearbar .btn{min-width:40px}
   .nota{white-space:pre-wrap; word-break:break-word; font-size:12px; margin-top:4px}
+  .gearbar .btn{min-width:40px}
 </style>
 </head>
 <body>
   <div class="container">
     <header>
-      <div>
-        <h1>Umbra Kart</h1>
-        <div class="muted">Panel lateral de jugador</div>
+      <div class="flex" style="gap:10px">
+        <img id="heroCar" src="img/autos/trash.png" alt="auto" style="height:44px;width:auto;display:block"/>
+        <div>
+          <h1>Panel de Jugador</h1>
+          <div class="muted">Tablero físico — Interfaz lateral</div>
+        </div>
       </div>
       <div id="colorPalette" class="flex"></div>
     </header>
 
     <div class="row">
-      <!-- Col 1: Árbitro -->
-      <section class="card grid" id="arbCard">
+      <!-- Columna 1: Árbitro -->
+      <section class="card grid">
         <div class="space">
           <h2 class="title">Modo Árbitro y fases</h2>
           <label class="flex" style="font-size:13px">
@@ -65,8 +65,8 @@
           </label>
         </div>
         <div class="grid-2">
-          <label>Jugadores <input id="totalPlayers" type="number" min="1" value="6"></label>
-          <label>Posición <input id="position" type="number" min="1" value="3"></label>
+          <label>Jugadores <input id="totalPlayers" type="number" min="1" value="6"/></label>
+          <label>Posición <input id="position" type="number" min="1" value="3"/></label>
         </div>
         <div class="grid-2">
           <div>Mazo sugerido <div id="deckSuggested" class="pill" style="margin-top:4px">delanteros</div></div>
@@ -80,7 +80,7 @@
         </div>
       </section>
 
-      <!-- Col 2: Jugador + Dados -->
+      <!-- Columna 2: Jugador + Dados -->
       <section class="card grid" id="playerCard">
         <div class="space">
           <div class="flex">
@@ -96,8 +96,7 @@
         </div>
         <div id="gearBtns" class="flex gearbar" style="flex-wrap:wrap"></div>
 
-        <!-- Dados -->
-        <div class="grid" style="gap:var(--gap)">
+        <div class="grid" style="gap:12px">
           <div class="grid-2" style="align-items:start">
             <div class="grid">
               <div class="title">Lanzar 2d6 + bonif</div>
@@ -124,7 +123,7 @@
         </div>
       </section>
 
-      <!-- Col 3: Poderes + Historial -->
+      <!-- Columna 3: Poderes + Historial -->
       <div class="grid">
         <section class="card grid">
           <div class="space">
@@ -154,32 +153,34 @@
     </div>
   </div>
 
-  <!-- SFX -->
-  <audio id="sfx-token"    preload="auto" src="sounds/airplane-fly-by-26222.mp3"></audio>       <!-- gastar token -->
-  <audio id="sfx-activate" preload="auto" src="sounds/game-start-6104.mp3"></audio>             <!-- activar poder -->
-  <audio id="sfx-crash"    preload="auto" src="sounds/car-crash-sound-effect-376874.mp3"></audio> <!-- entrar en FC -->
-  <audio id="sfx-motor"    preload="auto" src="sounds/audi-v8-acceleration-sound-6067.mp3"></audio> <!-- lanzar 2d6 -->
-  <audio id="sfx-gear"     preload="auto" src="sounds/080136_v8-supercar-acceleration-82900.mp3"></audio> <!-- cambio marcha -->
-
 <script>
-/* ───────── Colores ───────── */
-const COLOR_OPTIONS=[
-  "#0f172a",
-  "#1d4ed8",
-  "#047857",
-  "#facc15", // amarillo en lugar del naranja
-  "#ffffff", // blanco en lugar del morado oscuro
-  "#581c87",
-  "#14532d",
-  "#7f1d1d",
-  "#312e81",
-  "#1f2937"
+/* =================== PALETA DE COLORES / AUTO DEL HEADER =================== */
+const COLOR_OPTIONS = [
+  "#0f172a", // slate-900  → trash
+  "#1d4ed8", // blue-700   → pinion
+  "#047857", // emerald-700→ engine
+  "#facc15", // amarillo   → oxide
+  "#ffffff", // blanco     → scorch
+  "#581c87", // purple-900 → spikes
+  "#14532d", // green-900  → rogue
+  "#7f1d1d", // red-900    → crusher
+  "#312e81", // indigo-900 → ashes
+  "#1f2937"  // gray-800   → fang
 ];
 
-function setTheme(c){
-  document.body.style.background=`linear-gradient(to bottom, ${c}, #000)`;
-  state.color=c; renderPalette(c);
-}
+const COLOR_TO_CAR = {
+  "#0f172a": "trash",
+  "#1d4ed8": "pinion",
+  "#047857": "engine",
+  "#facc15": "oxide",
+  "#ffffff": "scorch",
+  "#581c87": "spikes",
+  "#14532d": "rogue",
+  "#7f1d1d": "crusher",
+  "#312e81": "ashes",
+  "#1f2937": "fang"
+};
+
 function renderPalette(sel){
   const pal=document.getElementById("colorPalette"); pal.innerHTML="";
   COLOR_OPTIONS.forEach(c=>{
@@ -190,201 +191,212 @@ function renderPalette(sel){
   });
 }
 
-/* ───────── Catálogo (tal cual) ───────── */
+function setTheme(c){
+  document.body.style.background = `linear-gradient(to bottom, ${c}, #000)`;
+  state.color = c;
+  const car = COLOR_TO_CAR[c] || "trash";
+  document.getElementById("heroCar").src = `img/autos/${car}.png`;
+  renderPalette(c);
+}
+
+/* =================== CATÁLOGO CON IMAGEN =================== */
 const CATALOG_BASE = [
   { id:"escudo-1", nombre:"Caparazón verde", deck:"ambos", tokens:1,
     nota:"Viaja en línea recta 12 casillas por turno hasta centrifugarse. Sirve como escudo. CAUSA FC.",
-    copias_delanteros: 3, copias_rezagados: 3 },
+    copias_delanteros:3, copias_rezagados:3, image:"img/powerups/caneria-oxidada.png" },
+
   { id:"escudo-1x3", nombre:"Caparazón rojo", deck:"ambos", tokens:1,
     nota:"Busca al jugador más cercano e ignora centrífuga. Sirve como escudo. CAUSA FC.",
-    copias_delanteros: 2, copias_rezagados: 2 },
+    copias_delanteros:2, copias_rezagados:2, image:"img/powerups/cohete-casero.png" },
+
   { id:"escudo-3", nombre:"Caparazón verde x3", deck:"ambos", tokens:3,
     nota:"Tres usos del caparazón verde (viaja recto). Puede actuar como escudo. Puede causar FC.",
-    copias_delanteros: 2, copias_rezagados: 2 },
+    copias_delanteros:2, copias_rezagados:2, image:"img/powerups/llanta-con-puas.png" },
+
   { id:"escudo-3x3", nombre:"Caparazón rojo x3", deck:"rezagados", tokens:3,
     nota:"Tres usos del caparazón rojo (busca rival). Puede causar FC.",
-    copias_delanteros: 0, copias_rezagados: 3 },
+    copias_delanteros:0, copias_rezagados:3, image:"img/powerups/cohetes-no-guiados.png" },
+
   { id:"ghost", nombre:"Ghost", deck:"rezagados", tokens:1,
     nota:"Roba 1 carta de la mano de un rival.",
-    copias_delanteros: 0, copias_rezagados: 2 },
+    copias_delanteros:0, copias_rezagados:2, image:"img/powerups/cadenas-garfio.png" },
+
   { id:"bomba", nombre:"Bomba", deck:"ambos", tokens:2,
     nota:"Dos tokens de turno; explota manualmente o al agotarse (radio 2). CAUSA FC.",
-    copias_delanteros: 2, copias_rezagados: 2 },
+    copias_delanteros:2, copias_rezagados:2, image:"img/powerups/barril-explosivo.png" },
+
   { id:"plantaF", nombre:"Planta de fuego", deck:"rezagados", tokens:3,
     nota:"Tres tokens. Tira 2d6 + bonif. Debe gastarse en un solo turno en cualquier dirección. CAUSA FC.",
-    copias_delanteros: 0, copias_rezagados: 2 },
+    copias_delanteros:0, copias_rezagados:2, image:"img/powerups/lanza-llamas.png" },
+
   { id:"boomerang", nombre:"Boomerang", deck:"rezagados", tokens:3,
     nota:"Tres tokens. Avanza 5 casillas hacia adelante (sólo adelante) y regresa por la misma trayectoria. CAUSA FC.",
-    copias_delanteros: 0, copias_rezagados: 2 },
+    copias_delanteros:0, copias_rezagados:2, image:"img/powerups/rafaga-tuercas.png" },
+
   { id:"calamar", nombre:"Calamar", deck:"ambos", tokens:2,
     nota:"Dos tokens. Afecta a todos los rivales (no afecta a Bala o Estrella). Impide subir marcha al final del turno.",
-    copias_delanteros: 2, copias_rezagados: 2 },
+    copias_delanteros:2, copias_rezagados:2, image:"img/powerups/humo-toxico.png" },
+
   { id:"champi", nombre:"Champiñón", deck:"rezagados", tokens:1,
     nota:"Al activar: +2 marchas y duplica bonif o el mayor dado (a elección). Si estrella durante su uso, causa FC.",
-    copias_delanteros: 5, copias_rezagados: 3 },
+    copias_delanteros:5, copias_rezagados:3, image:"img/powerups/nitro-casero.png" },
+
   { id:"champix3", nombre:"Champiñón x3", deck:"ambos", tokens:3,
     nota:"Versión de 3 usos del Champiñón. Puede causar FC al estrellar.",
-    copias_delanteros: 2, copias_rezagados: 3 },
+    copias_delanteros:2, copias_rezagados:3, image:"img/powerups/bidones-nitro.png" },
+
   { id:"estrella", nombre:"Estrella", deck:"ambos", tokens:1,
     nota:"Dos tokens de turno. +2 marchas. No tira dados: avanza 12 + bonif. Si estrella a alguien, causa FC.",
-    copias_delanteros: 1, copias_rezagados: 2 },
+    copias_delanteros:1, copias_rezagados:2, image:"img/powerups/monster-truck.png" },
+
   { id:"bala", nombre:"Joe Bala", deck:"rezagados", tokens:2,
-    nota:"Reemplaza ficha por token de pista; +1 marcha al activar. Avanza 12 + bonif; ignora centrífuga (en curva carril 2/3).",
-    copias_delanteros: 0, copias_rezagados: 2 },
+    nota:"Reemplaza ficha por token de pista; +1 marcha al activar. Avanza 12 + bonif; ignora centrífuga.",
+    copias_delanteros:0, copias_rezagados:2, image:"img/powerups/carro-blindado-taladro.png" },
+
   { id:"ampli", nombre:"Amplifieeeeer", deck:"ambos", tokens:"instant",
-    nota:"Instantáneo. Afecta a 3 casillas de radio: desplaza 2 casillas a rivales y reduce 2 marchas (mín 1ª).",
-    copias_delanteros: 2, copias_rezagados: 2 },
+    nota:"Instantáneo. Radio 3: desplaza 2 casillas y reduce 2 marchas (mín 1ª).",
+    copias_delanteros:2, copias_rezagados:2, image:"img/powerups/emp-granada.png" },
+
   { id:"champi-dorado", nombre:"Champiñón Dorado", deck:"rezagados", tokens:1,
-    nota:"+2 marchas. Relanza mientras salgan dados >2 (todo cuenta como un solo lanzamiento; ignora derrape). Si estrella, causa FC.",
-    copias_delanteros: 0, copias_rezagados: 2 },
+    nota:"+2 marchas. Relanza mientras salgan dados >2 (cuenta como un solo lanzamiento).",
+    copias_delanteros:0, copias_rezagados:2, image:"img/powerups/turbina-experimental.png" },
+
   { id:"planta", nombre:"Planta Carnívora", deck:"rezagados", tokens:1,
     nota:"Ataca adyacentes durante el avance. Ignora escudos y puede causar FC.",
-    copias_delanteros: 0, copias_rezagados: 2 },
-  { id:"caparazon-azul", nombre:"Caparazón Azul", deck:"rezagados", tokens:1,
-    nota:"Persigue al líder; avanza 12 + bonif (en curva cuenta como carril 2). Causa FC a quien se cruce hasta impactar al 1º.",
-    copias_delanteros: 0, copias_rezagados: 2 },
+    copias_delanteros:0, copias_rezagados:2, image:"img/powerups/motosierra-montada.png" },
+
+  { id:"caparazon-azul", nombre:"Drone perseguidor", deck:"rezagados", tokens:1,
+    nota:"Persigue al líder; avanza 12 + bonif (en curva carril 2). Causa FC al impactar.",
+    copias_delanteros:0, copias_rezagados:2, image:"img/powerups/dron-explosivo.png" },
+
   { id:"rayo", nombre:"Rayo", deck:"rezagados", tokens:2,
-    nota:"(1) Causa FC a todos. (2) Nadie puede subir de 1ª ni lanzar poderes (no afecta a Estrella o Joe Bala).",
-    copias_delanteros: 0, copias_rezagados: 2 },
+    nota:"(1) Todos FC. (2) Tope 1ª y sin poderes (no afecta a Estrella o Joe Bala).",
+    copias_delanteros:0, copias_rezagados:2, image:"img/powerups/tormenta-electrica.png" },
+
   { id:"banana", nombre:"Cáscara", deck:"ambos", tokens:1,
-    nota:"Se lanza al frente con 2d6 (toma el mayor) o se deja atrás en la casilla previa. Quien la pisa pierde 2 marchas y se detiene. Escudo.",
-    copias_delanteros: 5, copias_rezagados: 2 },
+    nota:"Se lanza al frente con 2d6 (mayor) o se deja atrás. Quien pisa pierde 2 marchas y se detiene. Escudo.",
+    copias_delanteros:5, copias_rezagados:2, image:"img/powerups/trampa-de-clavos.png" },
+
   { id:"banana3", nombre:"Cáscara x3", deck:"ambos", tokens:3,
-    nota:"Igual que la Cáscara pero con 3 usos. Sirve como escudo.",
-    copias_delanteros: 5, copias_rezagados: 2 }
+    nota:"Igual que la Cáscara pero con 3 usos. Escudo.",
+    copias_delanteros:5, copias_rezagados:2, image:"img/powerups/campo-minado.png" },
+
+  { id:"torreta", nombre:"Torreta automática", deck:"ambos", tokens:2,
+    nota:"Coloca torreta fija que dispara a rivales cercanos.",
+    copias_delanteros:1, copias_rezagados:1, image:"img/powerups/torreta-automatica.png" },
+
+  { id:"aceite", nombre:"Aceite incendiario", deck:"ambos", tokens:1,
+    nota:"Deja un charco que enciende y retrasa a quien lo pisa.",
+    copias_delanteros:1, copias_rezagados:1, image:"img/powerups/aceite-incendiario.png" }
 ];
 
-/* Conteos fijos derivados del catálogo */
 const DEFAULT_COUNTS = Object.fromEntries(
   CATALOG_BASE.map(p => [p.id, {delanteros: p.copias_delanteros, rezagados: p.copias_rezagados}])
 );
 
-/* ───────── Estado ───────── */
+/* =================== ESTADO Y UTILIDADES =================== */
 const bonifs={1:0,2:1,3:2,4:3,5:4,6:5};
 const state={
   nombre:"Jugador 1",
-  marcha:1, // inicia en 1ª
+  marcha:1, // siempre arranca en 1ª
   fc:false,
   jugadoresTotal:6,posicionActual:3,fase:"reponer",modoArbitro:true,
   mano:[],activos:[],counts:DEFAULT_COUNTS,catalog:CATALOG_BASE,
   diceCount:2,diceLog:[],hist:[],color:"#7f1d1d"
 };
 
-/* ───────── SFX helper ───────── */
-let sfxMuted = false;
-let sfxMaster = 1.0;
-function playSfx(id, { volume = 1.0 } = {}) {
-  if (sfxMuted) return;
-  const el = document.getElementById(id);
-  if (!el) return;
-  try {
-    const clone = el.cloneNode(true);
-    clone.volume = Math.max(0, Math.min(1, volume * sfxMaster));
-    clone.play().catch(()=>{});
-  } catch {}
-}
+const el=(id)=>document.getElementById(id);
+function pushHist(msg){ state.hist.unshift(msg); renderHistory(); }
+function pushDice(msg){ state.diceLog.unshift(msg); renderDiceLog(); }
+function sugerirDeck(pos,total){ return pos<=Math.floor(total/2) ? "delanteros" : "rezagados"; }
+function rollDie(s){ return 1 + Math.floor(Math.random()*s); }
 
-/* ───────── Utilidades ───────── */
-function el(id){return document.getElementById(id);}
-function pushHist(msg){state.hist.unshift(msg);renderHistory();}
-function pushDice(msg){state.diceLog.unshift(msg);renderDiceLog();}
-function sugerirDeck(pos,total){return pos<=Math.floor(total/2)?"delanteros":"rezagados";}
-function rollDie(s){return 1+Math.floor(Math.random()*s);}
-
-/* ───────── Render ───────── */
-function renderPlayer(){
-  el("playerName").value=state.nombre;
-  el("fcBadge").textContent = state.fc ? "FC (solo 1ª)" : "OK";
-  el("bonifLabel").textContent=(bonifs[state.marcha]>=0?"+":"")+bonifs[state.marcha];
-
-  const wrap=el("gearBtns"); wrap.innerHTML="";
-  const onlyInCierre = state.modoArbitro; // si árbitro activo, sólo en cierre
-  const canChange = onlyInCierre ? (state.fase === "cierre") : true;
-
-  [1,2,3,4,5,6].forEach(g=>{
-    const b=document.createElement("button");
-    b.textContent=g+"ª"; b.className="btn sm";
-
-    let disabled=false;
-    if (onlyInCierre && !canChange) disabled=true;            // árbitro: sólo cierre
-    if (!onlyInCierre && state.fc && g!==1) disabled=true;    // sin árbitro: FC limita
-
-    b.disabled = disabled;
-    b.title = disabled
-      ? (onlyInCierre ? "Sólo puedes cambiar marcha en CIERRE (Árbitro)" : "En FC sólo 1ª")
-      : ("Marcha "+g);
-
-    if(state.marcha===g){ b.style.background="#fff"; b.style.color="#111"; }
-    b.onclick=()=>{ 
-      if(!b.disabled){ 
-        state.marcha=g; 
-        playSfx("sfx-gear", { volume: 0.6 });  // sonido de cambio de marcha
-        renderPlayer(); 
-      } 
-    };
-    wrap.appendChild(b);
-  });
-}
+/* =================== RENDER =================== */
 function renderArb(){
   el("deckSuggested").textContent=sugerirDeck(state.posicionActual,state.jugadoresTotal);
   el("phaseLabel").textContent=state.fase;
   el("arbToggle").checked=state.modoArbitro;
 }
+function renderPlayer(){
+  el("playerName").value=state.nombre;
+  el("fcBadge").textContent = state.fc ? "FC (solo 1ª)" : "OK";
+  el("bonifLabel").textContent = (bonifs[state.marcha]>=0?"+":"")+bonifs[state.marcha];
+
+  const wrap=el("gearBtns"); wrap.innerHTML="";
+  const onlyInCierre = state.modoArbitro;              // con Árbitro, solo en CIERRE
+  const canChange = onlyInCierre ? (state.fase === "cierre") : true;
+
+  [1,2,3,4,5,6].forEach(g=>{
+    const b=document.createElement("button");
+    b.textContent=g+"ª"; b.className="btn sm";
+    let disabled=false;
+    if (onlyInCierre && !canChange) disabled=true;      // árbitro: sólo CIERRE
+    if (!onlyInCierre && state.fc && g!==1) disabled=true; // sin árbitro: FC limita
+    b.disabled = disabled;
+    b.title = disabled
+      ? (onlyInCierre ? "Sólo puedes cambiar marcha en CIERRE (Árbitro)" : "En FC sólo 1ª")
+      : ("Marcha "+g);
+    if(state.marcha===g){ b.style.background="#fff"; b.style.color="#111"; }
+    b.onclick=()=>{ if(!b.disabled){ state.marcha=g; renderPlayer(); } };
+    wrap.appendChild(b);
+  });
+}
 function renderDiceLog(){
   const ul=el("diceLog"); ul.innerHTML="";
-  if(state.diceLog.length===0){ ul.innerHTML="<li class='muted'>— Sin tiradas —</li>"; return; }
+  if(!state.diceLog.length){ ul.innerHTML="<li class='muted'>— Sin tiradas —</li>"; return; }
   state.diceLog.forEach(l=>{ const li=document.createElement("li"); li.textContent=l; ul.appendChild(li); });
 }
 function renderHistory(){
   const ul=el("history"); ul.innerHTML="";
-  if(state.hist.length===0){ ul.innerHTML="<li class='muted'>— Sin eventos —</li>"; return; }
+  if(!state.hist.length){ ul.innerHTML="<li class='muted'>— Sin eventos —</li>"; return; }
   state.hist.forEach(l=>{ const li=document.createElement("li"); li.textContent=l; ul.appendChild(li); });
 }
 function renderPowers(){
+  // Mano
   const hand=el("handList"); hand.innerHTML="";
-  if(state.mano.length===0){
+  if(!state.mano.length){
     hand.innerHTML="<li class='muted'>— Sin cartas —</li>";
   } else {
     const p=state.mano[0];
     hand.innerHTML = `<li class="card" style="padding:8px">
       <div class="space">
-        <div>
-          <div style="font-weight:700">${p.nombre}</div>
-          <div class="muted">${p.deck} · ${p.tokens==="instant"?"instantáneo":(p.tokens+" token(s)")}</div>
-          ${p.nota ? `<div class="nota">${p.nota}</div>` : ""}
+        <div class="flex" style="gap:10px;align-items:flex-start">
+          ${p.image ? `<img src="${p.image}" alt="" style="width:44px;height:44px;object-fit:contain;border-radius:8px"/>` : ""}
+          <div>
+            <div style="font-weight:700">${p.nombre}</div>
+            <div class="muted">${p.deck} · ${p.tokens==="instant"?"instantáneo":(p.tokens+" token(s)")}</div>
+            ${p.nota ? `<div class="nota">${p.nota}</div>` : ""}
+          </div>
         </div>
         <button id="activateBtn" class="btn sm">Activar</button>
       </div>
     </li>`;
     el("activateBtn").onclick=()=>{
-      const card = state.mano[0];
-      if(!card) return;
-      // sonido al activar (instantáneo o con tokens)
-      playSfx("sfx-activate", { volume: 0.8 });
-
+      const card = state.mano[0]; if(!card) return;
       if(card.tokens === "instant"){
         pushHist(`Poder instantáneo: ${card.nombre}`);
-        state.mano = [];
-        renderPowers();
-        return;
+        state.mano = []; renderPowers(); return;
       }
       state.activos=[{power:card,tokensRestantes:Number(card.tokens)}];
       state.mano=[]; pushHist(`Activado: ${card.nombre} (${card.tokens} token${card.tokens===1?"":"s"})`);
       renderPowers();
     };
   }
-
+  // Activo
   const active=el("activeList"); active.innerHTML="";
-  if(state.activos.length===0){
+  if(!state.activos.length){
     active.innerHTML="<li class='muted'>— Ninguno —</li>";
   } else {
     const slot=state.activos[0];
     active.innerHTML = `<li class="card" style="padding:8px">
       <div class="space">
-        <div>
-          <div style="font-weight:700">${slot.power.nombre}</div>
-          <div class="muted">${slot.tokensRestantes==null?"instantáneo":(slot.tokensRestantes+" token(s) restantes")}</div>
-          ${slot.power.nota ? `<div class="nota">${slot.power.nota}</div>` : ""}
+        <div class="flex" style="gap:10px;align-items:flex-start">
+          ${slot.power.image ? `<img src="${slot.power.image}" alt="" style="width:44px;height:44px;object-fit:contain;border-radius:8px"/>` : ""}
+          <div>
+            <div style="font-weight:700">${slot.power.nombre}</div>
+            <div class="muted">${slot.tokensRestantes==null?"instantáneo":(slot.tokensRestantes+" token(s) restantes")}</div>
+            ${slot.power.nota ? `<div class="nota">${slot.power.nota}</div>` : ""}
+          </div>
         </div>
         <div class="flex">
           ${slot.tokensRestantes!=null?`
@@ -400,7 +412,7 @@ function renderPowers(){
   }
 }
 
-/* ───────── Tokens activos ───────── */
+/* =================== LÓGICA: TOKENS / DADOS / MAZO =================== */
 function spendOneToken(){
   if(!state.activos.length) return;
   const slot = state.activos[0];
@@ -412,7 +424,6 @@ function spendOneToken(){
     slot.tokensRestantes -= 1;
     pushHist(`Gastas 1 token de ${slot.power.nombre} → quedan ${slot.tokensRestantes}`);
   }
-  playSfx("sfx-token", { volume: 0.85 }); // sonido al gastar 1
   renderPowers();
 }
 function spendAllTokens(){
@@ -421,29 +432,25 @@ function spendAllTokens(){
   if(slot.tokensRestantes == null) return;
   pushHist(`Agotas todos los tokens de ${slot.power.nombre}`);
   state.activos = [];
-  playSfx("sfx-token", { volume: 0.85 }); // sonido al gastar todos
   renderPowers();
 }
 
-/* ───────── Dados (derrape en movimiento) ───────── */
 function roll2d6(){
   if(state.fc){ pushHist("No puedes lanzar: FC"); return; }
   if(state.modoArbitro && state.fase!=="lanzar"){ pushHist("No es fase de lanzar"); return; }
   const d1=rollDie(6), d2=rollDie(6);
   const total = d1 + d2 + bonifs[state.marcha];
-  const derrapes = [d1,d2].filter(v=>v===2||v===5).length;  // +1D por cada 2 o 5
+  const derrapes = [d1,d2].filter(v=>v===2||v===5).length; // +1D por cada 2 o 5
   pushHist(`2d6 (${d1}+${d2}) + bonif(${bonifs[state.marcha]}) = ${total}${derrapes?` → Derrape +${derrapes}D`:""}`);
   pushDice(`Movimiento: ${total}${derrapes?` +${derrapes}D`:""}`);
-  playSfx("sfx-motor", { volume: 0.9 }); // sonido motor
 }
-function rollNd6(n,tag){
+function rollNd6(n){
   const vals=[]; for(let i=0;i<n;i++) vals.push(rollDie(6));
   const total=vals.reduce((a,b)=>a+b,0);
-  pushHist(`${n}d6${tag?(" ["+tag+"]"):""}: ${vals.join(" + ")} = ${total}`);
+  pushHist(`${n}d6: ${vals.join(" + ")} = ${total}`);
   pushDice(`${n}d6: ${total}`);
 }
 
-/* ───────── Robar de mazo sugerido (ponderado por copias) ───────── */
 function drawSuggested(){
   if(state.mano.length){ pushHist("Ya tienes carta en mano"); return; }
   const deck=sugerirDeck(state.posicionActual,state.jugadoresTotal); // "delanteros" o "rezagados"
@@ -455,31 +462,28 @@ function drawSuggested(){
     r-=(state.counts[p.id]?.[deck]||0);
     if(r<0){
       state.mano=[p];
-      pushHist(`Robas: ${p.nombre} — ${p.nota}`);
+      pushHist(`Robas: ${p.nombre}${p.nota?(" — "+p.nota):""}`);
       renderPowers();
       return;
     }
   }
 }
 
-/* ───────── Eventos UI ───────── */
+/* =================== EVENTOS UI =================== */
 document.getElementById("roll2d6Btn").onclick=roll2d6;
 document.getElementById("rollGenericBtn").onclick=()=>rollNd6(state.diceCount);
 document.getElementById("diceCount").onchange=()=>{ state.diceCount=+document.getElementById("diceCount").value; };
 
 document.getElementById("fcBtn").onclick=()=>{
-  if (!state.fc) { playSfx("sfx-crash", { volume: 0.9 }); } // entrando a FC
   state.fc=!state.fc;
   if(state.fc) state.marcha=1; // entrar a FC fuerza 1ª
   renderPlayer();
 };
+document.getElementById("playerName").oninput=()=>{ state.nombre=el("playerName").value; };
+document.getElementById("arbToggle").onchange=()=>{ state.modoArbitro=el("arbToggle").checked; renderPlayer(); };
 
-document.getElementById("playerName").oninput=()=>{ state.nombre=document.getElementById("playerName").value; };
-
-document.getElementById("arbToggle").onchange=()=>{ state.modoArbitro=document.getElementById("arbToggle").checked; renderPlayer(); };
-
-document.getElementById("totalPlayers").oninput=()=>{ state.jugadoresTotal=Math.max(1,+document.getElementById("totalPlayers").value||1); renderArb(); };
-document.getElementById("position").oninput=()=>{ state.posicionActual=Math.max(1,+document.getElementById("position").value||1); renderArb(); };
+document.getElementById("totalPlayers").oninput=()=>{ state.jugadoresTotal=Math.max(1,+el("totalPlayers").value||1); renderArb(); };
+document.getElementById("position").oninput=()=>{ state.posicionActual=Math.max(1,+el("position").value||1); renderArb(); };
 
 document.getElementById("nextPhaseBtn").onclick=()=>{
   const order=["reponer","accion1","lanzar","accion2","cierre"];
@@ -491,8 +495,13 @@ document.getElementById("resetTurnBtn").onclick=()=>{ state.fase="reponer"; rend
 document.getElementById("drawSuggestedBtn").onclick=drawSuggested;
 document.getElementById("discardHandBtn").onclick=()=>{ if(state.mano.length){ state.mano=[]; pushHist("Descartas la mano"); renderPowers(); } };
 
-/* ───────── Init ───────── */
-function renderAll(){ renderPalette(state.color); renderPlayer(); renderArb(); renderPowers(); renderDiceLog(); renderHistory(); }
+/* =================== INIT =================== */
+function renderAll(){
+  renderPalette(state.color);
+  // auto del header segun color actual
+  document.getElementById("heroCar").src = `img/autos/${COLOR_TO_CAR[state.color]||"trash"}.png`;
+  renderPlayer(); renderArb(); renderPowers(); renderDiceLog(); renderHistory();
+}
 renderAll();
 </script>
 </body>
