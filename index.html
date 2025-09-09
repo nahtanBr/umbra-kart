@@ -200,12 +200,15 @@ function renderPalette(sel){
   });
 }
 function setTheme(c){
-  document.body.style.background = `linear-gradient(to bottom, ${c}, #000)`;
-  state.color = c;
-  const car = COLOR_TO_CAR[c] || "trash";
-  const img = document.getElementById("heroCar");
-  img.src = asset(`img/autos/${car}.png`);
+  document.body.style.background=`linear-gradient(to bottom, ${c}, #000)`;
+  state.color=c;
   renderPalette(c);
+
+  // Actualizar nombre del carro
+  const carNameEl = document.getElementById("carName");
+  carNameEl.textContent = COLOR_TO_CAR[c] || "Car";
+}
+
 }
 
 /* =================== Catálogo apocalíptico con imágenes =================== */
