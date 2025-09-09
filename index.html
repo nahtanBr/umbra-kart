@@ -36,13 +36,28 @@
   .list{list-style:none;margin:0;padding:0;display:grid;gap:6px}
   .scroll{max-height:240px;overflow:auto;padding-right:4px;-webkit-overflow-scrolling:touch}
   .pill{display:inline-block;padding:3px 8px;border-radius:999px;background:rgba(255,255,255,.14);font-size:12px}
-  .color-swatch{border-radius:6px;border:2px solid transparent;cursor:pointer;width:26px;height:26px}
-  .color-swatch.active{border-color:#fff}
-  /* Paleta en dos filas (7 columnas) */
-  #colorPalette{display:grid;grid-template-columns:repeat(7,26px);grid-auto-rows:26px;gap:8px 10px}
-  @media (max-width:480px){ #colorPalette{grid-template-columns:repeat(5,26px)} }
-  .nota{white-space:pre-wrap; word-break:break-word; font-size:12px; margin-top:4px}
-  .gearbar .btn{min-width:40px}
+.color-swatch{
+  border-radius:6px;
+  border:2px solid transparent;
+  cursor:pointer;
+  width:18px;     /* nuevo ancho */
+  height:18px;    /* nuevo alto */
+}
+.color-swatch.active{border-color:#fff}
+
+#colorPalette{
+  display:grid;
+  grid-template-columns:repeat(10, 18px);
+  grid-auto-rows:18px;
+  gap:8px 10px;
+}
+
+@media (max-width:480px){
+  #colorPalette{
+    grid-template-columns:repeat(6, 18px);
+  }
+}
+
 </style>
 </head>
 <body>
@@ -85,17 +100,15 @@
 
       <!-- Columna 2: Jugador + Dados -->
       <section class="card grid" id="playerCard">
-        <div class="space">
-          <div class="flex" style="gap:10px">
-            <!-- Imagen GRANDE del personaje/auto -->
-            <img id="playerCarIcon" src="img/autos/trash.png" alt="car icon"
-                 style="max-width:100%; height:220px; object-fit:contain;border-radius:6px"/>
-            <span id="carName" style="font-weight:700;font-size:16px">Trash</span>
-            <span id="fcBadge" class="pill">OK</span>
-          </div>
-          <button id="fcBtn" class="btn sm">FC</button>
-        </div>
-
+      <div class="space">
+  <div id="playerHeadLeft" class="flex" style="gap:10px">
+    <img id="playerCarIcon" src="img/autos/trash.png" alt="car icon"
+         style="max-width:100%; height:220px; object-fit:contain;border-radius:6px"/>
+    <span id="carName" style="font-weight:700;font-size:16px">Trash</span>
+    <span id="fcBadge" class="pill">OK</span>
+  </div>
+  <button id="fcBtn" class="btn sm">FC</button>
+</div>
         <div class="space">
           <h2 class="title">Marcha actual</h2>
           <div class="muted">Bonificador: <b id="bonifLabel">+0</b></div>
@@ -158,6 +171,17 @@
       </div>
     </div>
   </div>
+#fcBadge{
+  margin-left:16px;   /* separa "OK" del nombre */
+}
+
+#playerHeadLeft{
+  gap:14px;           /* más espacio entre nombre y OK */
+}
+
+#playerCard .space{
+  column-gap:28px;    /* más aire entre el grupo izquierdo y el botón FC */
+}
 
   <!-- Modal selección de poder (Carroñero) -->
   <div id="selectModal" style="position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:50">
