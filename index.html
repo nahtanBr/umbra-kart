@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MAD KART</title>
+<title>Umbra Kart — Panel de Jugador</title>
 <style>
   :root{
-    --bg:#7f1d1d; --bg2:#000000;
+    --bg:#7f1d1d; --bg2:#000;
     --card:rgba(255,255,255,.06); --border:rgba(255,255,255,.15);
     --txt:#e5e7eb; --muted:#cbd5e1; --rad:14px; --pad:12px; --gap:12px; --gap-sm:8px;
   }
@@ -55,7 +55,7 @@
       <div class="flex" style="gap:12px">
         <div id="colorPalette" class="flex"></div>
         <label class="flex" style="font-size:13px;gap:6px">
-          <input id="muteToggle" type="checkbox" style="width:auto"/>
+          <input id="soundToggle" type="checkbox" style="width:auto" checked/>
           🔊 Sonido
         </label>
       </div>
@@ -160,20 +160,27 @@
   </div>
 
 <script>
-/* =================== PALETA DE COLORES / AUTO DEL HEADER =================== */
-const COLOR_OPTIONS = [
-  "#0f172a", // slate-900  → trash
-  "#1d4ed8", // blue-700   → pinion
-  "#047857", // emerald-700→ engine
-  "#facc15", // amarillo   → oxide
-  "#ffffff", // blanco     → scorch
-  "#581c87", // purple-900 → spikes
-  "#14532d", // green-900  → rogue
-  "#7f1d1d", // red-900    → crusher
-  "#312e81", // indigo-900 → ashes
-  "#1f2937"  // gray-800   → fang
-];
+/* =================== Helpers de assets (cache-busting + slug) =================== */
+const ASSETS_VERSION = 'v6';
+const asset = (p)=> `${p}?${ASSETS_VERSION}`;
+function slug(s){
+  return s.toString().normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"");
+}
 
+/* =================== Colores / Auto del header =================== */
+const COLOR_OPTIONS = [
+  "#0f172a", // trash
+  "#1d4ed8", // pinion
+  "#047857", // engine
+  "#facc15", // oxide (amarillo)
+  "#ffffff", // scorch (blanco)
+  "#581c87", // spikes
+  "#14532d", // rogue
+  "#7f1d1d", // crusher
+  "#312e81", // ashes
+  "#1f2937"  // fang
+];
 const COLOR_TO_CAR = {
   "#0f172a": "trash",
   "#1d4ed8": "pinion",
@@ -186,7 +193,6 @@ const COLOR_TO_CAR = {
   "#312e81": "ashes",
   "#1f2937": "fang"
 };
-
 function renderPalette(sel){
   const pal=document.getElementById("colorPalette"); pal.innerHTML="";
   COLOR_OPTIONS.forEach(c=>{
@@ -196,150 +202,132 @@ function renderPalette(sel){
     pal.appendChild(b);
   });
 }
-
 function setTheme(c){
   document.body.style.background = `linear-gradient(to bottom, ${c}, #000)`;
   state.color = c;
   const car = COLOR_TO_CAR[c] || "trash";
-  document.getElementById("heroCar").src = `img/autos/${car}.png`;
+  const img = document.getElementById("heroCar");
+  img.src = asset(`img/autos/${car}.png`);
   renderPalette(c);
 }
 
-/* =================== CATÁLOGO (APOCALÍPTICO) CON IMAGEN =================== */
-/* Usa estos nombres de archivo en /img/powerups/ (ajústalos si tus PNG tienen otro nombre) */
+/* =================== Catálogo apocalíptico con imágenes =================== */
 const CATALOG_BASE = [
-  { id:"escudo-1", nombre:"Cañería oxidada", deck:"ambos", tokens:1,
+  { id:"escudo-1", nombre:"Caparazón verde", deck:"ambos", tokens:1,
     nota:"Viaja en línea recta 12 casillas por turno hasta centrifugarse. Sirve como escudo. CAUSA FC.",
     copias_delanteros:3, copias_rezagados:3, image:"img/powerups/caneria-oxidada.png" },
-
-  { id:"escudo-1x3", nombre:"cohete casero", deck:"ambos", tokens:1,
+  { id:"escudo-1x3", nombre:"Caparazón rojo", deck:"ambos", tokens:1,
     nota:"Busca al jugador más cercano e ignora centrífuga. Sirve como escudo. CAUSA FC.",
     copias_delanteros:2, copias_rezagados:2, image:"img/powerups/cohete-casero.png" },
-
-  { id:"escudo-3", nombre:"llanta con puas", deck:"ambos", tokens:3,
-    nota:"Tres llantas que giran al rededor Busca al jugador más cercano e ignora centrífuga. Sirve como escudo. CAUSA FC.",
-    copias_delanteros:0, copias_rezagados:3, image:"img/powerups/llanta-con-puas.png" },
-
-  { id:"escudo-3x3", nombre:"cohetes no guiados", deck:"rezagados", tokens:3,
-    nota:"viaja en línea recta 12 casillas por turno hasta centrifugarse. Sirve como escudo. CAUSA FC.",
-    copias_delanteros:2, copias_rezagados:2, image:"img/powerups/cohetes-no-guiados.png" },
-
-  { id:"ghost", nombre:"carroñero", deck:"rezagados", tokens:1,
+  { id:"escudo-3", nombre:"Caparazón verde x3", deck:"ambos", tokens:3,
+    nota:"Tres usos del caparazón verde (viaja recto). Puede actuar como escudo. Puede causar FC.",
+    copias_delanteros:2, copias_rezagados:2, image:"img/powerups/llanta-con-puas.png" },
+  { id:"escudo-3x3", nombre:"Caparazón rojo x3", deck:"rezagados", tokens:3,
+    nota:"Tres usos del caparazón rojo (busca rival). Puede causar FC.",
+    copias_delanteros:0, copias_rezagados:3, image:"img/powerups/cohetes-no-guiados.png" },
+  { id:"ghost", nombre:"Ghost", deck:"rezagados", tokens:1,
     nota:"Roba 1 carta de la mano de un rival.",
-    copias_delanteros:0, copias_rezagados:2, image:"img/powerups/carronero.png" },
-
-  { id:"bomba", nombre:"Barril explosivo", deck:"ambos", tokens:2,
+    copias_delanteros:0, copias_rezagados:2, image:"img/powerups/cadenas-garfio.png" },
+  { id:"bomba", nombre:"Bomba", deck:"ambos", tokens:2,
     nota:"Dos tokens de turno; explota manualmente o al agotarse (radio 2). CAUSA FC.",
     copias_delanteros:2, copias_rezagados:2, image:"img/powerups/barril-explosivo.png" },
-
-  { id:"plantaF", nombre:"lanza llamas", deck:"rezagados", tokens:3,
+  { id:"plantaF", nombre:"Planta de fuego", deck:"rezagados", tokens:3,
     nota:"Tres tokens. Tira 2d6 + bonif. Debe gastarse en un solo turno en cualquier dirección. CAUSA FC.",
     copias_delanteros:0, copias_rezagados:2, image:"img/powerups/lanza-llamas.png" },
-
-  { id:"boomerang", nombre:"Ráfaga de tuercas", deck:"rezagados", tokens:3,
+  { id:"boomerang", nombre:"Boomerang", deck:"rezagados", tokens:3,
     nota:"Tres tokens. Avanza 5 casillas hacia adelante (sólo adelante) y regresa por la misma trayectoria. CAUSA FC.",
     copias_delanteros:0, copias_rezagados:2, image:"img/powerups/rafaga-tuercas.png" },
-
   { id:"calamar", nombre:"Humo tóxico", deck:"ambos", tokens:2,
     nota:"Dos tokens. Afecta a rivales cercanos (no afecta a Bala o Estrella). Impide subir marcha al final del turno.",
     copias_delanteros:2, copias_rezagados:2, image:"img/powerups/humo-toxico.png" },
-
   { id:"champi", nombre:"Nitro casero", deck:"rezagados", tokens:1,
     nota:"Al activar: +2 marchas y duplica bonif o el mayor dado (a elección). Si estrella durante su uso, causa FC.",
     copias_delanteros:5, copias_rezagados:3, image:"img/powerups/nitro-casero.png" },
-
   { id:"champix3", nombre:"Bidones de nitro x3", deck:"ambos", tokens:3,
     nota:"Tres usos del nitro. Puede causar FC al estrellar.",
     copias_delanteros:2, copias_rezagados:3, image:"img/powerups/bidones-nitro.png" },
-
   { id:"estrella", nombre:"Monster Truck", deck:"ambos", tokens:1,
-    nota:"Dos tokens de turno. +2 marchas. No tira dados: avanza 12 + bonif. Si estrella a alguien, causa FC, ignora centrifuga.",
+    nota:"+2 marchas. No tira dados: avanza 12 + bonif. Si estrella, causa FC (2 tokens de turno).",
     copias_delanteros:1, copias_rezagados:2, image:"img/powerups/monster-truck.png" },
-
   { id:"bala", nombre:"Carro blindado con taladro", deck:"rezagados", tokens:2,
     nota:"+1 marcha al activar. No tira dados: avanza 12 + bonif; ignora centrífuga (en curva carril 2/3).",
     copias_delanteros:0, copias_rezagados:2, image:"img/powerups/carro-blindado-taladro.png" },
-
   { id:"ampli", nombre:"Granada EMP", deck:"ambos", tokens:"instant",
-    nota:"Instantáneo. Radio 3: desplaza 2 casillas a rivales y reduce 2 marchas (mín 1ª).",
+    nota:"Instantáneo (radio 3): desplaza 2 casillas a rivales y reduce 2 marchas (mín 1ª).",
     copias_delanteros:2, copias_rezagados:2, image:"img/powerups/emp-granada.png" },
-
   { id:"champi-dorado", nombre:"Turbina experimental", deck:"rezagados", tokens:1,
-    nota:"+2 marchas. Relanza mientras salgan dados >2 (cuenta como un solo lanzamiento; ignora derrape). Si estrella, causa FC.",
+    nota:"+2 marchas. Relanza mientras salgan dados >2 (todo cuenta como un solo lanzamiento; ignora derrape). Si estrella, causa FC.",
     copias_delanteros:0, copias_rezagados:2, image:"img/powerups/turbina-experimental.png" },
-
   { id:"planta", nombre:"Motosierra montada", deck:"rezagados", tokens:1,
-    nota:"Ataca adyacentes durante el avance. Ignora escudos y puede causar FC. alcance 2",
+    nota:"Ataca adyacentes durante el avance. Ignora escudos y puede causar FC.",
     copias_delanteros:0, copias_rezagados:2, image:"img/powerups/motosierra-montada.png" },
-
   { id:"caparazon-azul", nombre:"Drone perseguidor", deck:"rezagados", tokens:1,
     nota:"Persigue al líder; avanza 12 + bonif (en curva cuenta como carril 2). Causa FC al impactar.",
     copias_delanteros:0, copias_rezagados:2, image:"img/powerups/dron-explosivo.png" },
-
   { id:"rayo", nombre:"Tormenta eléctrica", deck:"rezagados", tokens:2,
     nota:"(1) Todos FC. (2) Nadie sube de 1ª ni lanza poderes (no afecta a Monster Truck o Carro blindado).",
     copias_delanteros:0, copias_rezagados:2, image:"img/powerups/tormenta-electrica.png" },
-
   { id:"banana", nombre:"Trampa de clavos", deck:"ambos", tokens:1,
-    nota:"Se lanza al frente con 2d6 (toma el mayor) o se deja atrás. Quien pisa pierde 2 marchas y se detiene. Sirve como escudo.",
+    nota:"Se lanza al frente con 2d6 (toma el mayor) o se deja atrás. Quien pisa pierde 2 marchas y se detiene. Escudo.",
     copias_delanteros:5, copias_rezagados:2, image:"img/powerups/trampa-de-clavos.png" },
-
   { id:"banana3", nombre:"Campo minado", deck:"ambos", tokens:3,
     nota:"Versión de 3 usos de trampa. Sirve como escudo.",
     copias_delanteros:5, copias_rezagados:2, image:"img/powerups/campo-minado.png" },
-
   { id:"torreta", nombre:"Torreta automática", deck:"ambos", tokens:2,
     nota:"Coloca torreta fija que dispara a rivales cercanos.",
     copias_delanteros:1, copias_rezagados:1, image:"img/powerups/torreta-automatica.png" },
-
   { id:"aceite", nombre:"Aceite incendiario", deck:"ambos", tokens:1,
     nota:"Deja un charco que enciende y retrasa a quien lo pisa.",
     copias_delanteros:1, copias_rezagados:1, image:"img/powerups/aceite-incendiario.png" }
 ];
-
 const DEFAULT_COUNTS = Object.fromEntries(
   CATALOG_BASE.map(p => [p.id, {delanteros: p.copias_delanteros, rezagados: p.copias_rezagados}])
 );
 
-/* =================== ESTADO Y UTILIDADES =================== */
+/* =================== Estado y utils =================== */
 const bonifs={1:0,2:1,3:2,4:3,5:4,6:5};
 const state={
   nombre:"Jugador 1",
-  marcha:1, // siempre arranca en 1ª
-  fc:false,
+  marcha:1, fc:false,
   jugadoresTotal:6,posicionActual:3,fase:"reponer",modoArbitro:true,
   mano:[],activos:[],counts:DEFAULT_COUNTS,catalog:CATALOG_BASE,
   diceCount:2,diceLog:[],hist:[],color:"#7f1d1d",
   muted:false
 };
-
 const el=(id)=>document.getElementById(id);
 function pushHist(msg){ state.hist.unshift(new Date().toLocaleTimeString()+" — "+msg); renderHistory(); }
 function pushDice(msg){ state.diceLog.unshift(msg); renderDiceLog(); }
 function sugerirDeck(pos,total){ return pos<=Math.floor(total/2) ? "delanteros" : "rezagados"; }
 function rollDie(s){ return 1 + Math.floor(Math.random()*s); }
 
-/* =================== SONIDOS =================== */
+/* =================== Sonidos (con desbloqueo y cache-busting) =================== */
 const SND = {
-  activate: new Audio("audio/game-start.mp3"),
-  spend:    new Audio("audio/airplane.mp3"),
-  fc:       new Audio("audio/crash.mp3"),
-  roll:     new Audio("audio/roll.mp3"),
-  shift:    new Audio("audio/shift.mp3")
+  activate: new Audio(asset("audio/game-start.mp3")),
+  spend:    new Audio(asset("audio/airplane.mp3")),
+  fc:       new Audio(asset("audio/crash.mp3")),
+  roll:     new Audio(asset("audio/roll.mp3")),
+  shift:    new Audio(asset("audio/shift.mp3"))
 };
 SND.activate.volume=0.9; SND.spend.volume=0.9; SND.fc.volume=0.9; SND.roll.volume=0.8; SND.shift.volume=0.7;
+
+// Si falla la carga de un audio, avisa por consola una vez
+Object.entries(SND).forEach(([k,a])=>{
+  let warned=false;
+  a.addEventListener('error', ()=>{ if(!warned){ console.warn('⚠️ Sonido faltante:', a.src); warned=true; }});
+});
 
 function playSnd(key){
   if(state.muted) return;
   const a=SND[key]; if(!a) return;
   try{ a.currentTime=0; a.play().catch(()=>{}); }catch(_){}
 }
-document.addEventListener("click", ()=>{
+// Desbloqueo en el primer gesto del usuario (móviles)
+function unlockAudio(){
   Object.values(SND).forEach(a=>{ try{ a.play().then(()=>a.pause()).catch(()=>{});}catch(_){ }});
-},{once:true});
-el("muteToggle").onchange=(e)=>{ state.muted = e.target.checked; };
+}
+['click','touchstart'].forEach(ev => document.addEventListener(ev, unlockAudio, {once:true}));
 
-/* =================== RENDER =================== */
+/* =================== Render =================== */
 function renderArb(){
   el("deckSuggested").textContent=sugerirDeck(state.posicionActual,state.jugadoresTotal);
   el("phaseLabel").textContent=state.fase;
@@ -351,15 +339,15 @@ function renderPlayer(){
   el("bonifLabel").textContent = (bonifs[state.marcha]>=0?"+":"")+bonifs[state.marcha];
 
   const wrap=el("gearBtns"); wrap.innerHTML="";
-  const onlyInCierre = state.modoArbitro;              // con Árbitro, solo en CIERRE
+  const onlyInCierre = state.modoArbitro;              // con Árbitro: sólo CIERRE
   const canChange = onlyInCierre ? (state.fase === "cierre") : true;
 
   [1,2,3,4,5,6].forEach(g=>{
     const b=document.createElement("button");
     b.textContent=g+"ª"; b.className="btn sm";
     let disabled=false;
-    if (onlyInCierre && !canChange) disabled=true;      // árbitro: sólo CIERRE
-    if (!onlyInCierre && state.fc && g!==1) disabled=true; // sin árbitro: FC limita
+    if (onlyInCierre && !canChange) disabled=true;
+    if (!onlyInCierre && state.fc && g!==1) disabled=true;
     b.disabled = disabled;
     b.title = disabled
       ? (onlyInCierre ? "Sólo puedes cambiar marcha en CIERRE (Árbitro)" : "En FC sólo 1ª")
@@ -379,6 +367,14 @@ function renderHistory(){
   if(!state.hist.length){ ul.innerHTML="<li class='muted'>— Sin eventos —</li>"; return; }
   state.hist.forEach(l=>{ const li=document.createElement("li"); li.textContent=l; ul.appendChild(li); });
 }
+
+function powerImgSrc(p){
+  // usa p.image si existe, si no intenta por slug del nombre
+  const candidate = p.image ? p.image : `img/powerups/${slug(p.nombre)}.png`;
+  return asset(candidate);
+}
+const phSrc = asset('img/powerups/_placeholder.png');
+
 function renderPowers(){
   // Mano
   const hand=el("handList"); hand.innerHTML="";
@@ -386,10 +382,12 @@ function renderPowers(){
     hand.innerHTML="<li class='muted'>— Sin cartas —</li>";
   } else {
     const p=state.mano[0];
+    const src = powerImgSrc(p);
     hand.innerHTML = `<li class="card" style="padding:8px">
       <div class="space">
         <div class="flex" style="gap:10px;align-items:flex-start">
-          ${p.image ? `<img src="${p.image}" alt="" style="width:44px;height:44px;object-fit:contain;border-radius:8px"/>` : ""}
+          <img src="${src}" alt="" style="width:44px;height:44px;object-fit:contain;border-radius:8px"
+               onerror="this.onerror=null;this.src='${phSrc}'"/>
           <div>
             <div style="font-weight:700">${p.nombre}</div>
             <div class="muted">${p.deck} · ${p.tokens==="instant"?"instantáneo":(p.tokens+" token(s)")}</div>
@@ -417,10 +415,12 @@ function renderPowers(){
     active.innerHTML="<li class='muted'>— Ninguno —</li>";
   } else {
     const slot=state.activos[0];
+    const src = powerImgSrc(slot.power);
     active.innerHTML = `<li class="card" style="padding:8px">
       <div class="space">
         <div class="flex" style="gap:10px;align-items:flex-start">
-          ${slot.power.image ? `<img src="${slot.power.image}" alt="" style="width:44px;height:44px;object-fit:contain;border-radius:8px"/>` : ""}
+          <img src="${src}" alt="" style="width:44px;height:44px;object-fit:contain;border-radius:8px"
+               onerror="this.onerror=null;this.src='${phSrc}'"/>
           <div>
             <div style="font-weight:700">${slot.power.nombre}</div>
             <div class="muted">${slot.tokensRestantes==null?"instantáneo":(slot.tokensRestantes+" token(s) restantes")}</div>
@@ -441,7 +441,7 @@ function renderPowers(){
   }
 }
 
-/* =================== LÓGICA: TOKENS / DADOS / MAZO =================== */
+/* =================== Tokens / Dados / Mazo =================== */
 function spendOneToken(){
   if(!state.activos.length) return;
   const slot = state.activos[0];
@@ -486,7 +486,7 @@ function rollNd6(n){
 
 function drawSuggested(){
   if(state.mano.length){ pushHist("Ya tienes carta en mano"); return; }
-  const deck=sugerirDeck(state.posicionActual,state.jugadoresTotal); // "delanteros" o "rezagados"
+  const deck=sugerirDeck(state.posicionActual,state.jugadoresTotal); // "delanteros" / "rezagados"
   const pool=state.catalog.filter(p=>p.deck===deck || p.deck==="ambos");
   const total=pool.reduce((a,p)=>a+(state.counts[p.id]?.[deck]||0),0);
   if(total<=0){ pushHist("No hay cartas disponibles en el mazo sugerido"); return; }
@@ -502,7 +502,7 @@ function drawSuggested(){
   }
 }
 
-/* =================== EVENTOS UI =================== */
+/* =================== Eventos UI =================== */
 document.getElementById("roll2d6Btn").onclick=roll2d6;
 document.getElementById("rollGenericBtn").onclick=()=>rollNd6(state.diceCount);
 document.getElementById("diceCount").onchange=()=>{ state.diceCount=+document.getElementById("diceCount").value; };
@@ -529,11 +529,17 @@ document.getElementById("resetTurnBtn").onclick=()=>{ state.fase="reponer"; rend
 document.getElementById("drawSuggestedBtn").onclick=drawSuggested;
 document.getElementById("discardHandBtn").onclick=()=>{ if(state.mano.length){ state.mano=[]; pushHist("Descartas la mano"); renderPowers(); } };
 
-/* =================== INIT =================== */
+document.getElementById("soundToggle").onchange=(e)=>{
+  // checked = sonido ON
+  state.muted = !e.target.checked;
+};
+
+/* =================== Init =================== */
 function renderAll(){
   renderPalette(state.color);
-  // auto del header segun color actual
-  document.getElementById("heroCar").src = `img/autos/${COLOR_TO_CAR[state.color]||"trash"}.png`;
+  document.getElementById("heroCar").src = asset(`img/autos/${(COLOR_TO_CAR[state.color]||"trash")}.png`);
+  document.getElementById("soundToggle").checked = true; // sonido ON por defecto
+  state.muted = false;
   renderPlayer(); renderArb(); renderPowers(); renderDiceLog(); renderHistory();
 }
 renderAll();
