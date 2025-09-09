@@ -52,7 +52,13 @@
           <div class="muted">Tablero físico — Interfaz lateral</div>
         </div>
       </div>
-      <div id="colorPalette" class="flex"></div>
+      <div class="flex" style="gap:12px">
+        <div id="colorPalette" class="flex"></div>
+        <label class="flex" style="font-size:13px;gap:6px">
+          <input id="muteToggle" type="checkbox" style="width:auto"/>
+          🔊 Sonido
+        </label>
+      </div>
     </header>
 
     <div class="row">
@@ -199,7 +205,8 @@ function setTheme(c){
   renderPalette(c);
 }
 
-/* =================== CATÁLOGO CON IMAGEN =================== */
+/* =================== CATÁLOGO (APOCALÍPTICO) CON IMAGEN =================== */
+/* Usa estos nombres de archivo en /img/powerups/ (ajústalos si tus PNG tienen otro nombre) */
 const CATALOG_BASE = [
   { id:"escudo-1", nombre:"Caparazón verde", deck:"ambos", tokens:1,
     nota:"Viaja en línea recta 12 casillas por turno hasta centrifugarse. Sirve como escudo. CAUSA FC.",
@@ -233,52 +240,52 @@ const CATALOG_BASE = [
     nota:"Tres tokens. Avanza 5 casillas hacia adelante (sólo adelante) y regresa por la misma trayectoria. CAUSA FC.",
     copias_delanteros:0, copias_rezagados:2, image:"img/powerups/rafaga-tuercas.png" },
 
-  { id:"calamar", nombre:"Calamar", deck:"ambos", tokens:2,
-    nota:"Dos tokens. Afecta a todos los rivales (no afecta a Bala o Estrella). Impide subir marcha al final del turno.",
+  { id:"calamar", nombre:"Humo tóxico", deck:"ambos", tokens:2,
+    nota:"Dos tokens. Afecta a rivales cercanos (no afecta a Bala o Estrella). Impide subir marcha al final del turno.",
     copias_delanteros:2, copias_rezagados:2, image:"img/powerups/humo-toxico.png" },
 
-  { id:"champi", nombre:"Champiñón", deck:"rezagados", tokens:1,
+  { id:"champi", nombre:"Nitro casero", deck:"rezagados", tokens:1,
     nota:"Al activar: +2 marchas y duplica bonif o el mayor dado (a elección). Si estrella durante su uso, causa FC.",
     copias_delanteros:5, copias_rezagados:3, image:"img/powerups/nitro-casero.png" },
 
-  { id:"champix3", nombre:"Champiñón x3", deck:"ambos", tokens:3,
-    nota:"Versión de 3 usos del Champiñón. Puede causar FC al estrellar.",
+  { id:"champix3", nombre:"Bidones de nitro x3", deck:"ambos", tokens:3,
+    nota:"Tres usos del nitro. Puede causar FC al estrellar.",
     copias_delanteros:2, copias_rezagados:3, image:"img/powerups/bidones-nitro.png" },
 
-  { id:"estrella", nombre:"Estrella", deck:"ambos", tokens:1,
+  { id:"estrella", nombre:"Monster Truck", deck:"ambos", tokens:1,
     nota:"Dos tokens de turno. +2 marchas. No tira dados: avanza 12 + bonif. Si estrella a alguien, causa FC.",
     copias_delanteros:1, copias_rezagados:2, image:"img/powerups/monster-truck.png" },
 
-  { id:"bala", nombre:"Joe Bala", deck:"rezagados", tokens:2,
-    nota:"Reemplaza ficha por token de pista; +1 marcha al activar. Avanza 12 + bonif; ignora centrífuga.",
+  { id:"bala", nombre:"Carro blindado con taladro", deck:"rezagados", tokens:2,
+    nota:"+1 marcha al activar. No tira dados: avanza 12 + bonif; ignora centrífuga (en curva carril 2/3).",
     copias_delanteros:0, copias_rezagados:2, image:"img/powerups/carro-blindado-taladro.png" },
 
-  { id:"ampli", nombre:"Amplifieeeeer", deck:"ambos", tokens:"instant",
-    nota:"Instantáneo. Radio 3: desplaza 2 casillas y reduce 2 marchas (mín 1ª).",
+  { id:"ampli", nombre:"Granada EMP", deck:"ambos", tokens:"instant",
+    nota:"Instantáneo. Radio 3: desplaza 2 casillas a rivales y reduce 2 marchas (mín 1ª).",
     copias_delanteros:2, copias_rezagados:2, image:"img/powerups/emp-granada.png" },
 
-  { id:"champi-dorado", nombre:"Champiñón Dorado", deck:"rezagados", tokens:1,
-    nota:"+2 marchas. Relanza mientras salgan dados >2 (cuenta como un solo lanzamiento).",
+  { id:"champi-dorado", nombre:"Turbina experimental", deck:"rezagados", tokens:1,
+    nota:"+2 marchas. Relanza mientras salgan dados >2 (cuenta como un solo lanzamiento; ignora derrape). Si estrella, causa FC.",
     copias_delanteros:0, copias_rezagados:2, image:"img/powerups/turbina-experimental.png" },
 
-  { id:"planta", nombre:"Planta Carnívora", deck:"rezagados", tokens:1,
+  { id:"planta", nombre:"Motosierra montada", deck:"rezagados", tokens:1,
     nota:"Ataca adyacentes durante el avance. Ignora escudos y puede causar FC.",
     copias_delanteros:0, copias_rezagados:2, image:"img/powerups/motosierra-montada.png" },
 
   { id:"caparazon-azul", nombre:"Drone perseguidor", deck:"rezagados", tokens:1,
-    nota:"Persigue al líder; avanza 12 + bonif (en curva carril 2). Causa FC al impactar.",
+    nota:"Persigue al líder; avanza 12 + bonif (en curva cuenta como carril 2). Causa FC al impactar.",
     copias_delanteros:0, copias_rezagados:2, image:"img/powerups/dron-explosivo.png" },
 
-  { id:"rayo", nombre:"Rayo", deck:"rezagados", tokens:2,
-    nota:"(1) Todos FC. (2) Tope 1ª y sin poderes (no afecta a Estrella o Joe Bala).",
+  { id:"rayo", nombre:"Tormenta eléctrica", deck:"rezagados", tokens:2,
+    nota:"(1) Todos FC. (2) Nadie sube de 1ª ni lanza poderes (no afecta a Monster Truck o Carro blindado).",
     copias_delanteros:0, copias_rezagados:2, image:"img/powerups/tormenta-electrica.png" },
 
-  { id:"banana", nombre:"Cáscara", deck:"ambos", tokens:1,
-    nota:"Se lanza al frente con 2d6 (mayor) o se deja atrás. Quien pisa pierde 2 marchas y se detiene. Escudo.",
+  { id:"banana", nombre:"Trampa de clavos", deck:"ambos", tokens:1,
+    nota:"Se lanza al frente con 2d6 (toma el mayor) o se deja atrás. Quien pisa pierde 2 marchas y se detiene. Sirve como escudo.",
     copias_delanteros:5, copias_rezagados:2, image:"img/powerups/trampa-de-clavos.png" },
 
-  { id:"banana3", nombre:"Cáscara x3", deck:"ambos", tokens:3,
-    nota:"Igual que la Cáscara pero con 3 usos. Escudo.",
+  { id:"banana3", nombre:"Campo minado", deck:"ambos", tokens:3,
+    nota:"Versión de 3 usos de trampa. Sirve como escudo.",
     copias_delanteros:5, copias_rezagados:2, image:"img/powerups/campo-minado.png" },
 
   { id:"torreta", nombre:"Torreta automática", deck:"ambos", tokens:2,
@@ -302,14 +309,35 @@ const state={
   fc:false,
   jugadoresTotal:6,posicionActual:3,fase:"reponer",modoArbitro:true,
   mano:[],activos:[],counts:DEFAULT_COUNTS,catalog:CATALOG_BASE,
-  diceCount:2,diceLog:[],hist:[],color:"#7f1d1d"
+  diceCount:2,diceLog:[],hist:[],color:"#7f1d1d",
+  muted:false
 };
 
 const el=(id)=>document.getElementById(id);
-function pushHist(msg){ state.hist.unshift(msg); renderHistory(); }
+function pushHist(msg){ state.hist.unshift(new Date().toLocaleTimeString()+" — "+msg); renderHistory(); }
 function pushDice(msg){ state.diceLog.unshift(msg); renderDiceLog(); }
 function sugerirDeck(pos,total){ return pos<=Math.floor(total/2) ? "delanteros" : "rezagados"; }
 function rollDie(s){ return 1 + Math.floor(Math.random()*s); }
+
+/* =================== SONIDOS =================== */
+const SND = {
+  activate: new Audio("audio/game-start.mp3"),
+  spend:    new Audio("audio/airplane.mp3"),
+  fc:       new Audio("audio/crash.mp3"),
+  roll:     new Audio("audio/roll.mp3"),
+  shift:    new Audio("audio/shift.mp3")
+};
+SND.activate.volume=0.9; SND.spend.volume=0.9; SND.fc.volume=0.9; SND.roll.volume=0.8; SND.shift.volume=0.7;
+
+function playSnd(key){
+  if(state.muted) return;
+  const a=SND[key]; if(!a) return;
+  try{ a.currentTime=0; a.play().catch(()=>{}); }catch(_){}
+}
+document.addEventListener("click", ()=>{
+  Object.values(SND).forEach(a=>{ try{ a.play().then(()=>a.pause()).catch(()=>{});}catch(_){ }});
+},{once:true});
+el("muteToggle").onchange=(e)=>{ state.muted = e.target.checked; };
 
 /* =================== RENDER =================== */
 function renderArb(){
@@ -337,7 +365,7 @@ function renderPlayer(){
       ? (onlyInCierre ? "Sólo puedes cambiar marcha en CIERRE (Árbitro)" : "En FC sólo 1ª")
       : ("Marcha "+g);
     if(state.marcha===g){ b.style.background="#fff"; b.style.color="#111"; }
-    b.onclick=()=>{ if(!b.disabled){ state.marcha=g; renderPlayer(); } };
+    b.onclick=()=>{ if(!b.disabled){ const prev=state.marcha; state.marcha=g; renderPlayer(); if(prev!==g) playSnd("shift"); } };
     wrap.appendChild(b);
   });
 }
@@ -373,6 +401,7 @@ function renderPowers(){
     </li>`;
     el("activateBtn").onclick=()=>{
       const card = state.mano[0]; if(!card) return;
+      playSnd("activate");
       if(card.tokens === "instant"){
         pushHist(`Poder instantáneo: ${card.nombre}`);
         state.mano = []; renderPowers(); return;
@@ -417,6 +446,7 @@ function spendOneToken(){
   if(!state.activos.length) return;
   const slot = state.activos[0];
   if(slot.tokensRestantes == null) return;
+  playSnd("spend");
   if(slot.tokensRestantes <= 1){
     pushHist(`Finaliza: ${slot.power.nombre}`);
     state.activos = [];
@@ -430,6 +460,7 @@ function spendAllTokens(){
   if(!state.activos.length) return;
   const slot = state.activos[0];
   if(slot.tokensRestantes == null) return;
+  playSnd("spend");
   pushHist(`Agotas todos los tokens de ${slot.power.nombre}`);
   state.activos = [];
   renderPowers();
@@ -438,6 +469,7 @@ function spendAllTokens(){
 function roll2d6(){
   if(state.fc){ pushHist("No puedes lanzar: FC"); return; }
   if(state.modoArbitro && state.fase!=="lanzar"){ pushHist("No es fase de lanzar"); return; }
+  playSnd("roll");
   const d1=rollDie(6), d2=rollDie(6);
   const total = d1 + d2 + bonifs[state.marcha];
   const derrapes = [d1,d2].filter(v=>v===2||v===5).length; // +1D por cada 2 o 5
@@ -445,6 +477,7 @@ function roll2d6(){
   pushDice(`Movimiento: ${total}${derrapes?` +${derrapes}D`:""}`);
 }
 function rollNd6(n){
+  playSnd("roll");
   const vals=[]; for(let i=0;i<n;i++) vals.push(rollDie(6));
   const total=vals.reduce((a,b)=>a+b,0);
   pushHist(`${n}d6: ${vals.join(" + ")} = ${total}`);
@@ -475,8 +508,9 @@ document.getElementById("rollGenericBtn").onclick=()=>rollNd6(state.diceCount);
 document.getElementById("diceCount").onchange=()=>{ state.diceCount=+document.getElementById("diceCount").value; };
 
 document.getElementById("fcBtn").onclick=()=>{
+  const wasFC = state.fc;
   state.fc=!state.fc;
-  if(state.fc) state.marcha=1; // entrar a FC fuerza 1ª
+  if(state.fc){ state.marcha=1; playSnd("fc"); }
   renderPlayer();
 };
 document.getElementById("playerName").oninput=()=>{ state.nombre=el("playerName").value; };
