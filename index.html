@@ -229,7 +229,7 @@ const CATALOG_BASE = [
   { id:"escudo-3x3", nombre:"Cohete no guiado", deck:"rezagados", tokens:3,
     nota:"Viaja en línea recta 12 casillas por turno hasta centrifugarse. Sirve como escudo. CAUSA FC.",
     copias_delanteros:0, copias_rezagados:3, image:"img/powerups/cohetes-no-guiados.png" },
-  { id:"ghost", nombre:"Carroñero", deck:"rezagados", tokens:1,
+  { id:"carronero", nombre:"Carroñero", deck:"rezagados", tokens:1,
     nota:"Roba 1 carta de la mano de un rival.",
     copias_delanteros:0, copias_rezagados:2, image:"img/powerups/carronero.png" },
   { id:"bomba", nombre:"Barril explosivo", deck:"ambos", tokens:2,
@@ -301,6 +301,67 @@ function pushHist(msg){ state.hist.unshift(new Date().toLocaleTimeString()+" —
 function pushDice(msg){ state.diceLog.unshift(msg); renderDiceLog(); }
 function sugerirDeck(pos,total){ return pos<=Math.floor(total/2) ? "delanteros" : "rezagados"; }
 function rollDie(s){ return 1 + Math.floor(Math.random()*s); }
+// ───────── Modal para Carroñero ─────────
+const selModal = document.getElementById("selectModal");
+const selCloseBtn = document.getElementById("selCloseBtn");
+const selFilter = document.getElementById("selFilter");
+const selPower = document.getElementById("selPower");
+const selNota = document.getElementById("selNota");
+const selTakeBtn = document.getElementById("selTakeBtn");
+
+function openCarroneroPicker(){
+  // construimos opciones (excluye al propio Carroñero)
+  const pool = state.catalog.filter(p => p.id !== "carronero");
+  selFilter.value = "";
+  buildSelList(pool);
+  selNota.textContent = "";
+  selModal.style.display = "flex";
+
+  // listeners
+  selFilter.oninput = () => {
+    const q = selFilter.value.trim().toLowerCase();
+    const filtered = pool.filter(p => (p.nombre || "").toLowerCase().includes(q));
+    buildSelList(filtered);
+  };
+  selPower.onchange = () => {
+    const p = getSelectedFromSel(pool);
+    selNota.textContent = p ? (p.nota || "") : "";
+  };
+  selTakeBtn.onclick = () => {
+    const p = getSelectedFromSel(pool);
+    if(!p) return;
+    // otorgar a la mano (si ya hay algo, lo sustituimos para cumplir “máx 1 en mano”)
+    state.mano = [p];
+    pushHist(`Carroñero elige: ${p.nombre}`);
+    renderPowers();
+    closeCarroneroPicker();
+  };
+  selCloseBtn.onclick = closeCarroneroPicker;
+  selModal.onclick = (e)=>{ if(e.target === selModal) closeCarroneroPicker(); };
+}
+function closeCarroneroPicker(){
+  selModal.style.display = "none";
+}
+function buildSelList(arr){
+  selPower.innerHTML = "";
+  arr.forEach(p=>{
+    const opt = document.createElement("option");
+    opt.value = p.id;
+    opt.textContent = `${p.nombre} — ${p.deck} · ${p.tokens==="instant"?"instantáneo":p.tokens+" tok."}`;
+    selPower.appendChild(opt);
+  });
+  if(arr.length){
+    selPower.selectedIndex = 0;
+    selNota.textContent = arr[0].nota || "";
+  }else{
+    selNota.textContent = "Sin resultados";
+  }
+}
+function getSelectedFromSel(pool){
+  const id = selPower.value;
+  return pool.find(p => p.id === id) || null;
+}
+
 
 /* =============== Sonidos (parche universal móvil/desktop) =============== */
 let AUDIO_READY=false;
@@ -542,5 +603,27 @@ function renderAll(){
 }
 renderAll();
 </script>
+  <!-- Modal selección de poder (Carroñero) -->
+<div id="selectModal" style="position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:50">
+  <div class="card" style="width:min(520px,94vw)">
+    <div class="space" style="margin-bottom:8px">
+      <h2 class="title">Elige un poder</h2>
+      <button id="selCloseBtn" class="btn sm">Cancelar</button>
+    </div>
+    <div class="grid">
+      <label>Filtro por nombre
+        <input id="selFilter" type="text" placeholder="Escribe para filtrar…"/>
+      </label>
+      <label>Catálogo
+        <select id="selPower" size="8" style="width:100%"></select>
+      </label>
+      <div class="space">
+        <span class="muted" id="selNota" style="min-height:1.4em"></span>
+        <button id="selTakeBtn" class="btn primary">Tomar poder</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
