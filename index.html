@@ -36,36 +36,41 @@
   .list{list-style:none;margin:0;padding:0;display:grid;gap:6px}
   .scroll{max-height:240px;overflow:auto;padding-right:4px;-webkit-overflow-scrolling:touch}
   .pill{display:inline-block;padding:3px 8px;border-radius:999px;background:rgba(255,255,255,.14);font-size:12px}
-.color-swatch{
-  border-radius:6px;
-  border:2px solid transparent;
-  cursor:pointer;
-  width:18px;     /* nuevo ancho */
-  height:18px;    /* nuevo alto */
-}
-.color-swatch.active{border-color:#fff}
 
-#colorPalette{
-  display:grid;
-  grid-template-columns:repeat(10, 18px);
-  grid-auto-rows:18px;
-  gap:8px 10px;
-}
-
-@media (max-width:480px){
+  /* -------- Paleta en dos filas, swatches pequeños -------- */
   #colorPalette{
-    grid-template-columns:repeat(6, 18px);
+    display:grid;
+    grid-auto-flow:column;               /* llena columnas de arriba a abajo */
+    grid-template-rows:repeat(2, 18px);  /* dos filas */
+    gap:8px 10px;
   }
-}
+  .color-swatch{
+    width:18px; height:18px;
+    border-radius:6px; border:2px solid transparent; cursor:pointer;
+  }
+  .color-swatch.active{border-color:#fff}
+  @media (max-width:480px){
+    #colorPalette{ grid-template-rows:repeat(2, 18px); }
+  }
 
+  /* -------- Ajustes de separación FC / OK -------- */
+  #fcBadge{ margin-left:16px; }
+  #playerHeadLeft{ gap:14px; }
+  #playerCard .space{ column-gap:28px; }
+
+  .nota{white-space:pre-wrap; word-break:break-word; font-size:12px; margin-top:4px}
+  .gearbar .btn{min-width:40px}
 </style>
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>RoadFury</h1>
+      <div class="flex" style="gap:10px;align-items:center">
+        <img id="heroCar" src="img/autos/trash.png" alt="auto" style="height:4px;width:auto;display:block"/>
+        <h1>RoadFury</h1>
+      </div>
       <div class="flex" style="gap:12px">
-        <div id="colorPalette"></div>
+        <div id="colorPalette" class="flex"></div>
         <label class="flex" style="font-size:13px;gap:6px">
           <input id="soundToggle" type="checkbox" style="width:auto" checked/>
           🔊 Sonido
@@ -100,15 +105,15 @@
 
       <!-- Columna 2: Jugador + Dados -->
       <section class="card grid" id="playerCard">
-      <div class="space">
-  <div id="playerHeadLeft" class="flex" style="gap:10px">
-    <img id="playerCarIcon" src="img/autos/trash.png" alt="car icon"
-         style="max-width:100%; height:220px; object-fit:contain;border-radius:6px"/>
-    <span id="carName" style="font-weight:700;font-size:16px">Trash</span>
-    <span id="fcBadge" class="pill">OK</span>
-  </div>
-  <button id="fcBtn" class="btn sm">FC</button>
-</div>
+        <div class="space">
+          <div id="playerHeadLeft" class="flex" style="gap:10px">
+            <img id="playerCarIcon" src="img/autos/trash.png" alt="car icon" style="max-width:100%; height:200px; object-fit:contain;border-radius:6px"/>
+            <span id="carName" style="font-weight:700;font-size:16px">Trash</span>
+            <span id="fcBadge" class="pill">OK</span>
+          </div>
+          <button id="fcBtn" class="btn sm">FC</button>
+        </div>
+
         <div class="space">
           <h2 class="title">Marcha actual</h2>
           <div class="muted">Bonificador: <b id="bonifLabel">+0</b></div>
@@ -171,17 +176,6 @@
       </div>
     </div>
   </div>
-#fcBadge{
-  margin-left:16px;   /* separa "OK" del nombre */
-}
-
-#playerHeadLeft{
-  gap:14px;           /* más espacio entre nombre y OK */
-}
-
-#playerCard .space{
-  column-gap:28px;    /* más aire entre el grupo izquierdo y el botón FC */
-}
 
   <!-- Modal selección de poder (Carroñero) -->
   <div id="selectModal" style="position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:50">
@@ -253,7 +247,7 @@ const CAR_LABEL = {
   witch:"Witch", monstar:"Monstar", paniga:"Paniga"
 };
 
-/* === Render de la paleta === */
+/* === Render de paleta === */
 function renderPalette(sel){
   const pal = document.getElementById("colorPalette");
   if (!pal) return;
@@ -272,13 +266,19 @@ function renderPalette(sel){
 function setTheme(c){
   document.body.style.background = `linear-gradient(to bottom, ${c}, #000)`;
   state.color = c;
+
   const key = COLOR_TO_CAR_KEY[c] || "trash";
   const label = CAR_LABEL[key] || "Car";
   const src = asset(`img/autos/${key}.png`);
+
+  const heroEl   = document.getElementById("heroCar");
   const playerEl = document.getElementById("playerCarIcon");
   const nameEl   = document.getElementById("carName");
+
+  if (heroEl)   heroEl.src = src;
   if (playerEl) playerEl.src = src;
   if (nameEl)   nameEl.textContent = label;
+
   renderPalette(c);
 }
 
@@ -331,7 +331,7 @@ const CATALOG_BASE = [
     copias_delanteros:0, copias_rezagados:2, image:"img/powerups/turbina-experimental.png" },
   { id:"planta", nombre:"Motosierra montada", deck:"rezagados", tokens:1,
     nota:"Ataca adyacentes durante el avance. Ignora escudos y puede causar FC.",
-    copias_delanteros:0, copias_rezagados:2, image:"img/powerups/motosierra-montada.png" },
+    copias_delanteros:0, copios_rezagados:2, image:"img/powerups/motosierra-montada.png" }, /* typo intencional? corregimos abajo */
   { id:"caparazon-azul", nombre:"Drone perseguidor", deck:"rezagados", tokens:1,
     nota:"Persigue al líder; avanza 12 + bonif (en curva cuenta como carril 2). Causa FC al impactar.",
     copias_delanteros:0, copias_rezagados:2, image:"img/powerups/dron-explosivo.png" },
@@ -351,6 +351,9 @@ const CATALOG_BASE = [
     nota:"Deja un charco que enciende y retrasa a quien lo pisa mueve dos casillas horizontalmente y baja todas las marchas.",
     copias_delanteros:1, copias_rezagados:1, image:"img/powerups/aceite-incendiario.png" }
 ];
+// corregir pequeño typo si quedó pegado:
+CATALOG_BASE.forEach(p=>{ if(p.id==="planta") p.copias_rezagados=2; });
+
 const DEFAULT_COUNTS = Object.fromEntries(
   CATALOG_BASE.map(p => [p.id, {delanteros: p.copias_delanteros, rezagados: p.copias_rezagados}])
 );
@@ -369,7 +372,7 @@ function pushDice(msg){ state.diceLog.unshift(msg); renderDiceLog(); }
 function sugerirDeck(pos,total){ return pos<=Math.floor(total/2) ? "delanteros" : "rezagados"; }
 function rollDie(s){ return 1 + Math.floor(Math.random()*s); }
 
-/* ====== Modal para Carroñero ====== */
+/* ───────── Modal para Carroñero ───────── */
 const selModal = document.getElementById("selectModal");
 const selCloseBtn = document.getElementById("selCloseBtn");
 const selFilter = document.getElementById("selFilter");
@@ -425,7 +428,7 @@ function getSelectedFromSel(pool){
   return pool.find(p => p.id === id) || null;
 }
 
-/* =============== Sonidos =============== */
+/* =============== Sonidos (móvil/desktop) =============== */
 let AUDIO_READY=false;
 function makeSound(path){
   const a=new Audio(asset(path)); a.preload="auto";
@@ -499,7 +502,6 @@ function powerImgSrc(p){
 }
 const phSrc = asset('img/powerups/_placeholder.png');
 function renderPowers(){
-  // Mano
   const hand=el("handList"); hand.innerHTML="";
   if(!state.mano.length){
     hand.innerHTML="<li class='muted'>— Sin cartas —</li>";
@@ -539,7 +541,7 @@ function renderPowers(){
       renderPowers();
     };
   }
-  // Activo
+
   const active=el("activeList"); active.innerHTML="";
   if(!state.activos.length){
     active.innerHTML="<li class='muted'>— Ninguno —</li>";
@@ -571,7 +573,7 @@ function renderPowers(){
   }
 }
 
-/* =============== Lógica de juego: tokens, dados, mazos =============== */
+/* =============== Lógica de juego =============== */
 function spendOneToken(){
   if(!state.activos.length) return;
   const slot = state.activos[0];
@@ -601,7 +603,7 @@ function roll2d6(){
   playSnd("roll");
   const d1=rollDie(6), d2=rollDie(6);
   const total = d1 + d2 + bonifs[state.marcha];
-  const derrapes = [d1,d2].filter(v=>v===2||v===5).length; // +1D por cada 2 o 5
+  const derrapes = [d1,d2].filter(v=>v===2||v===5).length;
   pushHist(`2d6 (${d1}+${d2}) + bonif(${bonifs[state.marcha]}) = ${total}${derrapes?` → Derrape +${derrapes}D`:""}`);
   pushDice(`Movimiento: ${total}${derrapes?` +${derrapes}D`:""}`);
 }
@@ -663,9 +665,10 @@ document.getElementById("soundToggle").onchange=(e)=>{
 function renderAll(){
   renderPalette(state.color);
   const key = COLOR_TO_CAR_KEY[state.color] || "trash";
+  document.getElementById("heroCar").src = asset(`img/autos/${key}.png`);
   document.getElementById("playerCarIcon").src = asset(`img/autos/${key}.png`);
   document.getElementById("carName").textContent = CAR_LABEL[key] || "Car";
-  document.getElementById("soundToggle").checked = true; // sonido ON
+  document.getElementById("soundToggle").checked = true;
   state.muted = false;
   renderPlayer(); renderArb(); renderPowers(); renderDiceLog(); renderHistory();
 }
