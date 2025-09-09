@@ -156,6 +156,27 @@
       </div>
     </div>
   </div>
+  <!-- Modal selección de poder (Carroñero) -->
+<div id="selectModal" style="position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:50">
+  <div class="card" style="width:min(520px,94vw)">
+    <div class="space" style="margin-bottom:8px">
+      <h2 class="title">Elige un poder</h2>
+      <button id="selCloseBtn" class="btn sm">Cancelar</button>
+    </div>
+    <div class="grid">
+      <label>Filtro por nombre
+        <input id="selFilter" type="text" placeholder="Escribe para filtrar…"/>
+      </label>
+      <label>Catálogo
+        <select id="selPower" size="8" style="width:100%"></select>
+      </label>
+      <div class="space">
+        <span class="muted" id="selNota" style="min-height:1.4em"></span>
+        <button id="selTakeBtn" class="btn primary">Tomar poder</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
 /* =============== Config general / utilidades =============== */
@@ -614,27 +635,5 @@ function renderAll(){
 }
 renderAll();
 </script>
-  <!-- Modal selección de poder (Carroñero) -->
-<div id="selectModal" style="position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:50">
-  <div class="card" style="width:min(520px,94vw)">
-    <div class="space" style="margin-bottom:8px">
-      <h2 class="title">Elige un poder</h2>
-      <button id="selCloseBtn" class="btn sm">Cancelar</button>
-    </div>
-    <div class="grid">
-      <label>Filtro por nombre
-        <input id="selFilter" type="text" placeholder="Escribe para filtrar…"/>
-      </label>
-      <label>Catálogo
-        <select id="selPower" size="8" style="width:100%"></select>
-      </label>
-      <div class="space">
-        <span class="muted" id="selNota" style="min-height:1.4em"></span>
-        <button id="selTakeBtn" class="btn primary">Tomar poder</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 </body>
 </html>
