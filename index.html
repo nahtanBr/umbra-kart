@@ -227,7 +227,7 @@ const CAR_LABEL = {
   witch:"Witch", monstar:"Monstar", paniga:"Paniga"
 };
 
-/* === Render de la paleta (FALTABA) === */
+  /* === Render de la paleta (FALTABA) === */
 function renderPalette(sel){
   const pal = document.getElementById("colorPalette");
   if (!pal) return;
@@ -239,7 +239,23 @@ function renderPalette(sel){
     b.title = c;
     b.onclick = ()=> setTheme(c);
     pal.appendChild(b);
-  });
+  }
+/* Paleta en dos filas (7 columnas) */
+#colorPalette{
+  display:grid !important;              /* anula la clase .flex del contenedor */
+  grid-template-columns: repeat(7, 26px);
+  grid-auto-rows: 26px;
+  gap: 8px 10px;                         /* fila x columna */
+}
+
+/* Ajuste en pantallas pequeñas */
+@media (max-width: 480px){
+  #colorPalette{
+    grid-template-columns: repeat(5, 26px);
+  }
+}
+
+);
 }
 
 /* === Tema y actualización de imágenes/título según color === */
