@@ -66,7 +66,6 @@
   <div class="container">
     <header>
       <div class="flex" style="gap:10px;align-items:center">
-        <img id="heroCar" src="img/autos/trash.png" alt="auto" style="height:4px;width:auto;display:block"/>
         <h1>RoadFury</h1>
       </div>
       <div class="flex" style="gap:12px">
@@ -107,7 +106,7 @@
       <section class="card grid" id="playerCard">
         <div class="space">
           <div id="playerHeadLeft" class="flex" style="gap:10px">
-            <img id="playerCarIcon" src="img/autos/trash.png" alt="car icon" style="max-width:100%; height:200px; object-fit:contain;border-radius:6px"/>
+            <img id="playerCarIcon" src="img/autos/trash.png" alt="car icon" style="max-width:100%; height:160px; object-fit:contain;border-radius:6px"/>
             <span id="carName" style="font-weight:700;font-size:16px">Trash</span>
             <span id="fcBadge" class="pill">OK</span>
           </div>
@@ -262,7 +261,7 @@ function renderPalette(sel){
   });
 }
 
-/* === Tema y actualización de imágenes/título según color === */
+/* === Tema y actualización de imágenes/nombre según color === */
 function setTheme(c){
   document.body.style.background = `linear-gradient(to bottom, ${c}, #000)`;
   state.color = c;
@@ -271,11 +270,9 @@ function setTheme(c){
   const label = CAR_LABEL[key] || "Car";
   const src = asset(`img/autos/${key}.png`);
 
-  const heroEl   = document.getElementById("heroCar");
   const playerEl = document.getElementById("playerCarIcon");
   const nameEl   = document.getElementById("carName");
 
-  if (heroEl)   heroEl.src = src;
   if (playerEl) playerEl.src = src;
   if (nameEl)   nameEl.textContent = label;
 
@@ -331,7 +328,7 @@ const CATALOG_BASE = [
     copias_delanteros:0, copias_rezagados:2, image:"img/powerups/turbina-experimental.png" },
   { id:"planta", nombre:"Motosierra montada", deck:"rezagados", tokens:1,
     nota:"Ataca adyacentes durante el avance. Ignora escudos y puede causar FC.",
-    copias_delanteros:0, copios_rezagados:2, image:"img/powerups/motosierra-montada.png" }, /* typo intencional? corregimos abajo */
+    copias_delanteros:0, copias_rezagados:2, image:"img/powerups/motosierra-montada.png" },
   { id:"caparazon-azul", nombre:"Drone perseguidor", deck:"rezagados", tokens:1,
     nota:"Persigue al líder; avanza 12 + bonif (en curva cuenta como carril 2). Causa FC al impactar.",
     copias_delanteros:0, copias_rezagados:2, image:"img/powerups/dron-explosivo.png" },
@@ -351,8 +348,6 @@ const CATALOG_BASE = [
     nota:"Deja un charco que enciende y retrasa a quien lo pisa mueve dos casillas horizontalmente y baja todas las marchas.",
     copias_delanteros:1, copias_rezagados:1, image:"img/powerups/aceite-incendiario.png" }
 ];
-// corregir pequeño typo si quedó pegado:
-CATALOG_BASE.forEach(p=>{ if(p.id==="planta") p.copias_rezagados=2; });
 
 const DEFAULT_COUNTS = Object.fromEntries(
   CATALOG_BASE.map(p => [p.id, {delanteros: p.copias_delanteros, rezagados: p.copias_rezagados}])
@@ -665,7 +660,6 @@ document.getElementById("soundToggle").onchange=(e)=>{
 function renderAll(){
   renderPalette(state.color);
   const key = COLOR_TO_CAR_KEY[state.color] || "trash";
-  document.getElementById("heroCar").src = asset(`img/autos/${key}.png`);
   document.getElementById("playerCarIcon").src = asset(`img/autos/${key}.png`);
   document.getElementById("carName").textContent = CAR_LABEL[key] || "Car";
   document.getElementById("soundToggle").checked = true;
