@@ -163,7 +163,19 @@
 
 <script>
 /* ───────── Colores ───────── */
-const COLOR_OPTIONS=["#0f172a","#1d4ed8","#047857","#7c2d12","#4a044e","#581c87","#14532d","#7f1d1d","#312e81","#1f2937"];
+const COLOR_OPTIONS=[
+  "#0f172a",
+  "#1d4ed8",
+  "#047857",
+  "#facc15", // amarillo en lugar del naranja
+  "#ffffff", // blanco en lugar del morado oscuro
+  "#581c87",
+  "#14532d",
+  "#7f1d1d",
+  "#312e81",
+  "#1f2937"
+];
+
 function setTheme(c){
   document.body.style.background=`linear-gradient(to bottom, ${c}, #000)`;
   state.color=c; renderPalette(c);
