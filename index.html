@@ -36,21 +36,13 @@
   .list{list-style:none;margin:0;padding:0;display:grid;gap:6px}
   .scroll{max-height:240px;overflow:auto;padding-right:4px;-webkit-overflow-scrolling:touch}
   .pill{display:inline-block;padding:3px 8px;border-radius:999px;background:rgba(255,255,255,.14);font-size:12px}
-  .color-swatch{width:22px;height:22px;border-radius:6px;border:2px solid transparent;cursor:pointer}
+  .color-swatch{border-radius:6px;border:2px solid transparent;cursor:pointer;width:26px;height:26px}
   .color-swatch.active{border-color:#fff}
+  /* Paleta en dos filas (7 columnas) */
+  #colorPalette{display:grid;grid-template-columns:repeat(7,26px);grid-auto-rows:26px;gap:8px 10px}
+  @media (max-width:480px){ #colorPalette{grid-template-columns:repeat(5,26px)} }
   .nota{white-space:pre-wrap; word-break:break-word; font-size:12px; margin-top:4px}
   .gearbar .btn{min-width:40px}
-
-  /* Paleta en dos filas */
-  #colorPalette{
-    display:grid !important;
-    grid-template-columns: repeat(7, 26px);
-    grid-auto-rows: 26px;
-    gap: 8px 10px;
-  }
-  @media (max-width:480px){
-    #colorPalette{ grid-template-columns: repeat(5, 26px); }
-  }
 </style>
 </head>
 <body>
@@ -58,7 +50,7 @@
     <header>
       <h1>RoadFury</h1>
       <div class="flex" style="gap:12px">
-        <div id="colorPalette" class="flex"></div>
+        <div id="colorPalette"></div>
         <label class="flex" style="font-size:13px;gap:6px">
           <input id="soundToggle" type="checkbox" style="width:auto" checked/>
           🔊 Sonido
@@ -95,7 +87,9 @@
       <section class="card grid" id="playerCard">
         <div class="space">
           <div class="flex" style="gap:10px">
-            <img id="playerCarIcon" src="img/autos/trash.png" alt="car icon" style="max-width:100%; height:200px; object-fit:contain;border-radius:6px"/>
+            <!-- Imagen GRANDE del personaje/auto -->
+            <img id="playerCarIcon" src="img/autos/trash.png" alt="car icon"
+                 style="max-width:100%; height:220px; object-fit:contain;border-radius:6px"/>
             <span id="carName" style="font-weight:700;font-size:16px">Trash</span>
             <span id="fcBadge" class="pill">OK</span>
           </div>
@@ -145,19 +139,44 @@
               <button id="discardHandBtn" class="btn sm">Descartar</button>
             </div>
           </div>
+
           <div class="grid">
             <div class="title">En mano</div>
             <ul id="handList" class="list scroll"></ul>
           </div>
+
           <div class="grid">
             <div class="title">Activo</div>
             <ul id="activeList" class="list scroll"></ul>
           </div>
         </section>
+
         <section class="card">
           <h2 class="title">Historial</h2>
           <ul id="history" class="list scroll"></ul>
         </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal selección de poder (Carroñero) -->
+  <div id="selectModal" style="position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:50">
+    <div class="card" style="width:min(520px,94vw)">
+      <div class="space" style="margin-bottom:8px">
+        <h2 class="title">Elige un poder</h2>
+        <button id="selCloseBtn" class="btn sm">Cancelar</button>
+      </div>
+      <div class="grid">
+        <label>Filtro por nombre
+          <input id="selFilter" type="text" placeholder="Escribe para filtrar…"/>
+        </label>
+        <label>Catálogo
+          <select id="selPower" size="8" style="width:100%"></select>
+        </label>
+        <div class="space">
+          <span class="muted" id="selNota" style="min-height:1.4em"></span>
+          <button id="selTakeBtn" class="btn primary">Tomar poder</button>
+        </div>
       </div>
     </div>
   </div>
@@ -173,77 +192,459 @@ function slug(s){
 
 /* === Paleta de colores → personajes (incluye motos) === */
 const COLOR_OPTIONS = [
-  "#0f172a","#1d4ed8","#047857","#facc15","#ffffff",
-  "#581c87","#14532d","#7f1d1d","#312e81","#1f2937",
-  "#4b5563","#22c55e","#e5e7eb"
+  "#0f172a", // trash
+  "#1d4ed8", // pinion
+  "#047857", // engine
+  "#facc15", // oxide (amarillo)
+  "#ffffff", // scorch (blanco puro)
+  "#581c87", // spikes
+  "#14532d", // rogue
+  "#7f1d1d", // crusher
+  "#312e81", // ashes
+  "#1f2937", // fang
+  "#4b5563", // witch (gris oscuro, MT-09)
+  "#22c55e", // monstar (verde ER6n)
+  "#e5e7eb"  // paniga (blanco humo, Panigale)
 ];
+
 const COLOR_TO_CAR_KEY = {
-  "#0f172a":"trash","#1d4ed8":"pinion","#047857":"engine","#facc15":"oxide","#ffffff":"scorch",
-  "#581c87":"spikes","#14532d":"rogue","#7f1d1d":"crusher","#312e81":"ashes","#1f2937":"fang",
-  "#4b5563":"witch","#22c55e":"monstar","#e5e7eb":"paniga"
+  "#0f172a": "trash",
+  "#1d4ed8": "pinion",
+  "#047857": "engine",
+  "#facc15": "oxide",
+  "#ffffff": "scorch",
+  "#581c87": "spikes",
+  "#14532d": "rogue",
+  "#7f1d1d": "crusher",
+  "#312e81": "ashes",
+  "#1f2937": "fang",
+  "#4b5563": "witch",
+  "#22c55e": "monstar",
+  "#e5e7eb": "paniga"
 };
+
 const CAR_LABEL = {
   trash:"Trash", pinion:"Pinion", engine:"Engine", oxide:"Oxide", scorch:"Scorch",
   spikes:"Spikes", rogue:"Rogue", crusher:"Crusher", ashes:"Ashes", fang:"Fang",
   witch:"Witch", monstar:"Monstar", paniga:"Paniga"
 };
+
+/* === Render de la paleta === */
 function renderPalette(sel){
-  const pal=document.getElementById("colorPalette"); pal.innerHTML="";
+  const pal = document.getElementById("colorPalette");
+  if (!pal) return;
+  pal.innerHTML = "";
   COLOR_OPTIONS.forEach(c=>{
-    const b=document.createElement("button");
-    b.className="color-swatch"+(c===sel?" active":"");
-    b.style.background=c; b.onclick=()=>setTheme(c);
+    const b = document.createElement("button");
+    b.className = "color-swatch" + (c===sel ? " active" : "");
+    b.style.background = c;
+    b.title = c;
+    b.onclick = ()=> setTheme(c);
     pal.appendChild(b);
   });
 }
+
+/* === Tema y actualización de imágenes/título según color === */
 function setTheme(c){
   document.body.style.background = `linear-gradient(to bottom, ${c}, #000)`;
-  state.color=c;
-  const key=COLOR_TO_CAR_KEY[c]||"trash";
-  const label=CAR_LABEL[key]||"Car";
-  document.getElementById("playerCarIcon").src=asset(`img/autos/${key}.png`);
-  document.getElementById("carName").textContent=label;
+  state.color = c;
+  const key = COLOR_TO_CAR_KEY[c] || "trash";
+  const label = CAR_LABEL[key] || "Car";
+  const src = asset(`img/autos/${key}.png`);
+  const playerEl = document.getElementById("playerCarIcon");
+  const nameEl   = document.getElementById("carName");
+  if (playerEl) playerEl.src = src;
+  if (nameEl)   nameEl.textContent = label;
   renderPalette(c);
 }
 
-/* =============== Estado =============== */
-const bonifs={1:0,2:1,3:2,4:3,5:4,6:5};
-const state={marcha:1,fc:false,jugadoresTotal:6,posicionActual:3,fase:"reponer",
-             modoArbitro:true,mano:[],activos:[],diceCount:2,diceLog:[],hist:[],color:"#7f1d1d"};
+/* =============== Catálogo apocalíptico con imágenes =============== */
+const CATALOG_BASE = [
+  { id:"escudo-1", nombre:"Cañería oxidada", deck:"ambos", tokens:1,
+    nota:"Viaja en línea recta 12 casillas por turno hasta centrifugarse. Sirve como escudo. CAUSA FC.",
+    copias_delanteros:3, copias_rezagados:3, image:"img/powerups/caneria-oxidada.png" },
+  { id:"escudo-1x3", nombre:"Cohete casero", deck:"ambos", tokens:1,
+    nota:"12 casillas por turno Busca al jugador más cercano e ignora centrífuga. Sirve como escudo. CAUSA FC.",
+    copias_delanteros:2, copias_rezagados:2, image:"img/powerups/cohete-casero.png" },
+  { id:"escudo-3", nombre:"llanta con puas", deck:"ambos", tokens:3,
+    nota:"12 casillas por turno Busca al jugador más cercano e ignora centrífuga. Sirve como escudo. CAUSA FC.",
+    copias_delanteros:2, copias_rezagados:2, image:"img/powerups/llanta-con-puas.png" },
+  { id:"escudo-3x3", nombre:"Cohete no guiado", deck:"rezagados", tokens:3,
+    nota:"Viaja en línea recta 12 casillas por turno hasta centrifugarse. Sirve como escudo. CAUSA FC.",
+    copias_delanteros:0, copias_rezagados:3, image:"img/powerups/cohetes-no-guiados.png" },
+  { id:"carronero", nombre:"Carroñero", deck:"rezagados", tokens:1,
+    nota:"Roba 1 carta de la mano de un rival.",
+    copias_delanteros:0, copias_rezagados:2, image:"img/powerups/carronero.png" },
+  { id:"bomba", nombre:"Barril explosivo", deck:"ambos", tokens:2,
+    nota:"Dos tokens de turno; explota manualmente o al agotarse (radio 2). CAUSA FC.",
+    copias_delanteros:2, copias_rezagados:2, image:"img/powerups/barril-explosivo.png" },
+  { id:"plantaF", nombre:"lanza llamas", deck:"rezagados", tokens:3,
+    nota:"Tres tokens. Tira 2d6 + bonif. Debe gastarse en un solo turno en cualquier dirección. CAUSA FC.",
+    copias_delanteros:0, copias_rezagados:2, image:"img/powerups/lanza-llamas.png" },
+  { id:"boomerang", nombre:"Rafaga de tuercas", deck:"rezagados", tokens:3,
+    nota:"Tres tokens. Avanza 5 casillas hacia adelante (sólo adelante) y regresa por la misma trayectoria. CAUSA FC.",
+    copias_delanteros:0, copias_rezagados:2, image:"img/powerups/rafaga-de-tuercas.png" },
+  { id:"calamar", nombre:"Humo tóxico", deck:"ambos", tokens:1,
+    nota:"Afecta a todos los rivales, les sube dos marchas(no afecta a Bala o Estrella). Impide bajar marcha al final del turno.",
+    copias_delanteros:2, copias_rezagados:2, image:"img/powerups/humo-toxico.png" },
+  { id:"champi", nombre:"Nitro casero", deck:"rezagados", tokens:1,
+    nota:"Al activar: +2 marchas y duplica bonif o el mayor dado (a elección). Si estrella durante su uso, causa FC.",
+    copias_delanteros:5, copias_rezagados:3, image:"img/powerups/nitro-casero.png" },
+  { id:"champix3", nombre:"Bidones de nitro x3", deck:"ambos", tokens:3,
+    nota:"Tres usos del nitro. Puede causar FC al estrellar.",
+    copias_delanteros:1, copias_rezagados:3, image:"img/powerups/bidones-nitro.png" },
+  { id:"estrella", nombre:"Monster Truck", deck:"ambos", tokens:1,
+    nota:"+2 marchas. No tira dados: avanza 12 + bonif. Si estrella, causa FC (2 tokens de turno) ignora centrifuga.",
+    copias_delanteros:1, copias_rezagados:2, image:"img/powerups/monster-truck.png" },
+  { id:"bala", nombre:"Carro blindado con taladro", deck:"rezagados", tokens:2,
+    nota:"+1 marcha al activar. No tira dados: avanza 12 + bonif; ignora centrífuga (en curva carril 3).",
+    copias_delanteros:0, copias_rezagados:2, image:"img/powerups/carro-blindado-taladro.png" },
+  { id:"ampli", nombre:"Granada EMP", deck:"ambos", tokens:"instant",
+    nota:"Instantáneo (radio 3): desplaza 2 casillas a rivales y reduce 2 marchas (mín 1ª).",
+    copias_delanteros:2, copias_rezagados:2, image:"img/powerups/emp-granada.png" },
+  { id:"champi-dorado", nombre:"Turbina experimental", deck:"rezagados", tokens:1,
+    nota:"+2 marchas. Relanza mientras salgan dados >2 (todo cuenta como un solo lanzamiento; ignora derrape). Si estrella, causa FC.",
+    copias_delanteros:0, copias_rezagados:2, image:"img/powerups/turbina-experimental.png" },
+  { id:"planta", nombre:"Motosierra montada", deck:"rezagados", tokens:1,
+    nota:"Ataca adyacentes durante el avance. Ignora escudos y puede causar FC.",
+    copias_delanteros:0, copias_rezagados:2, image:"img/powerups/motosierra-montada.png" },
+  { id:"caparazon-azul", nombre:"Drone perseguidor", deck:"rezagados", tokens:1,
+    nota:"Persigue al líder; avanza 12 + bonif (en curva cuenta como carril 2). Causa FC al impactar.",
+    copias_delanteros:0, copias_rezagados:2, image:"img/powerups/dron-explosivo.png" },
+  { id:"rayo", nombre:"Tormenta eléctrica", deck:"rezagados", tokens:2,
+    nota:"(1) Todos FC. (2) Nadie sube de 1ª ni lanza poderes (no afecta a Monster Truck o Carro blindado).",
+    copias_delanteros:0, copias_rezagados:2, image:"img/powerups/tormenta-electrica.png" },
+  { id:"banana", nombre:"Trampa de clavos", deck:"ambos", tokens:1,
+    nota:"Se lanza al frente con 2d6 (toma el mayor) o se deja atrás. Quien pisa pierde 2 marchas y se detiene. Escudo.",
+    copias_delanteros:5, copias_rezagados:2, image:"img/powerups/trampa-de-clavos.png" },
+  { id:"banana3", nombre:"Campo minado", deck:"ambos", tokens:3,
+    nota:"Versión de 3 usos de trampa. Sirve como escudo.",
+    copias_delanteros:5, copias_rezagados:2, image:"img/powerups/campo-minado.png" },
+  { id:"torreta", nombre:"Torreta automática", deck:"ambos", tokens:2,
+    nota:"Coloca torreta fija que dispara a rivales cercanos causa fc a todo rival que este a 2 o menos.",
+    copias_delanteros:1, copias_rezagados:1, image:"img/powerups/torreta-automatica.png" },
+  { id:"aceite", nombre:"Aceite incendiario", deck:"ambos", tokens:1,
+    nota:"Deja un charco que enciende y retrasa a quien lo pisa mueve dos casillas horizontalmente y baja todas las marchas.",
+    copias_delanteros:1, copias_rezagados:1, image:"img/powerups/aceite-incendiario.png" }
+];
+const DEFAULT_COUNTS = Object.fromEntries(
+  CATALOG_BASE.map(p => [p.id, {delanteros: p.copias_delanteros, rezagados: p.copias_rezagados}])
+);
 
-/* =============== Render (simplificado) =============== */
-const el=id=>document.getElementById(id);
+/* =============== Estado y helpers =============== */
+const bonifs={1:0,2:1,3:2,4:3,5:4,6:5};
+const state={
+  marcha:1, fc:false,
+  jugadoresTotal:6,posicionActual:3,fase:"reponer",modoArbitro:true,
+  mano:[],activos:[],counts:DEFAULT_COUNTS,catalog:CATALOG_BASE,
+  diceCount:2,diceLog:[],hist:[],color:"#7f1d1d", muted:false
+};
+const el=(id)=>document.getElementById(id);
+function pushHist(msg){ state.hist.unshift(new Date().toLocaleTimeString()+" — "+msg); renderHistory(); }
+function pushDice(msg){ state.diceLog.unshift(msg); renderDiceLog(); }
+function sugerirDeck(pos,total){ return pos<=Math.floor(total/2) ? "delanteros" : "rezagados"; }
+function rollDie(s){ return 1 + Math.floor(Math.random()*s); }
+
+/* ====== Modal para Carroñero ====== */
+const selModal = document.getElementById("selectModal");
+const selCloseBtn = document.getElementById("selCloseBtn");
+const selFilter = document.getElementById("selFilter");
+const selPower = document.getElementById("selPower");
+const selNota = document.getElementById("selNota");
+const selTakeBtn = document.getElementById("selTakeBtn");
+
+function openCarroneroPicker(){
+  const pool = state.catalog.filter(p => p.id !== "carronero");
+  selFilter.value = "";
+  buildSelList(pool);
+  selNota.textContent = "";
+  selModal.style.display = "flex";
+
+  selFilter.oninput = () => {
+    const q = selFilter.value.trim().toLowerCase();
+    const filtered = pool.filter(p => (p.nombre || "").toLowerCase().includes(q));
+    buildSelList(filtered);
+  };
+  selPower.onchange = () => {
+    const p = getSelectedFromSel(pool);
+    selNota.textContent = p ? (p.nota || "") : "";
+  };
+  selTakeBtn.onclick = () => {
+    const p = getSelectedFromSel(pool);
+    if(!p) return;
+    state.mano = [p];
+    pushHist(`Carroñero elige: ${p.nombre}`);
+    renderPowers();
+    closeCarroneroPicker();
+  };
+  selCloseBtn.onclick = closeCarroneroPicker;
+  selModal.onclick = (e)=>{ if(e.target === selModal) closeCarroneroPicker(); };
+}
+function closeCarroneroPicker(){ selModal.style.display = "none"; }
+function buildSelList(arr){
+  selPower.innerHTML = "";
+  arr.forEach(p=>{
+    const opt = document.createElement("option");
+    opt.value = p.id;
+    opt.textContent = `${p.nombre} — ${p.deck} · ${p.tokens==="instant"?"instantáneo":p.tokens+" tok."}`;
+    selPower.appendChild(opt);
+  });
+  if(arr.length){
+    selPower.selectedIndex = 0;
+    selNota.textContent = arr[0].nota || "";
+  }else{
+    selNota.textContent = "Sin resultados";
+  }
+}
+function getSelectedFromSel(pool){
+  const id = selPower.value;
+  return pool.find(p => p.id === id) || null;
+}
+
+/* =============== Sonidos =============== */
+let AUDIO_READY=false;
+function makeSound(path){
+  const a=new Audio(asset(path)); a.preload="auto";
+  a.addEventListener("error", ()=>console.warn("⚠️ Audio no cargó:", a.src));
+  try{ a.load(); }catch(_){}
+  return a;
+}
+const SND={
+  activate: makeSound("audio/game-start.mp3"),
+  spend:    makeSound("audio/crash.mp3"),
+  fc:       makeSound("audio/crash.mp3"),
+  roll:     makeSound("audio/shift.mp3"),
+  shift:    makeSound("audio/shift.mp3")
+};
+function primeSounds(){
+  if(AUDIO_READY) return; AUDIO_READY=true;
+  Object.values(SND).forEach(a=>{
+    try{ a.play().then(()=>{a.pause();a.currentTime=0;}).catch(()=>{});}catch(_){}
+  });
+}
+["pointerdown","touchstart","click"].forEach(ev=>document.addEventListener(ev, primeSounds, {once:true, passive:true}));
+function playSnd(key){
+  if(state.muted) return;
+  primeSounds();
+  const a=SND[key]; if(!a) return;
+  try{ a.currentTime=0; a.play().catch(()=>{});}catch(_){}
+}
+
+/* =============== Render =============== */
+function renderArb(){
+  el("deckSuggested").textContent=sugerirDeck(state.posicionActual,state.jugadoresTotal);
+  el("phaseLabel").textContent=state.fase;
+  el("arbToggle").checked=state.modoArbitro;
+}
 function renderPlayer(){
-  el("fcBadge").textContent=state.fc?"FC":"OK";
-  el("bonifLabel").textContent=(bonifs[state.marcha]>=0?"+":"")+bonifs[state.marcha];
+  el("fcBadge").textContent = state.fc ? "FC (solo 1ª)" : "OK";
+  el("bonifLabel").textContent = (bonifs[state.marcha]>=0?"+":"")+bonifs[state.marcha];
+
   const wrap=el("gearBtns"); wrap.innerHTML="";
+  const onlyInCierre = state.modoArbitro;
+  const canChange = onlyInCierre ? (state.fase === "cierre") : true;
+
   [1,2,3,4,5,6].forEach(g=>{
     const b=document.createElement("button");
     b.textContent=g+"ª"; b.className="btn sm";
+    let disabled=false;
+    if (onlyInCierre && !canChange) disabled=true;
+    if (!onlyInCierre && state.fc && g!==1) disabled=true;
+    b.disabled = disabled;
+    b.title = disabled
+      ? (onlyInCierre ? "Sólo puedes cambiar marcha en CIERRE (Árbitro)" : "En FC sólo 1ª")
+      : ("Marcha "+g);
     if(state.marcha===g){ b.style.background="#fff"; b.style.color="#111"; }
-    b.onclick=()=>{state.marcha=g; renderPlayer();};
+    b.onclick=()=>{ if(!b.disabled){ const prev=state.marcha; state.marcha=g; renderPlayer(); if(prev!==g) playSnd("shift"); } };
     wrap.appendChild(b);
   });
 }
-function renderHistory(){el("history").innerHTML=state.hist.map(h=>`<li>${h}</li>`).join("");}
-function renderDiceLog(){el("diceLog").innerHTML=state.diceLog.map(h=>`<li>${h}</li>`).join("");}
-function pushHist(m){state.hist.unshift(m);renderHistory();}
-function pushDice(m){state.diceLog.unshift(m);renderDiceLog();}
-function rollDie(s){return 1+Math.floor(Math.random()*s);}
+function renderDiceLog(){
+  const ul=el("diceLog"); ul.innerHTML="";
+  if(!state.diceLog.length){ ul.innerHTML="<li class='muted'>— Sin tiradas —</li>"; return; }
+  state.diceLog.forEach(l=>{ const li=document.createElement("li"); li.textContent=l; ul.appendChild(li); });
+}
+function renderHistory(){
+  const ul=el("history"); ul.innerHTML="";
+  if(!state.hist.length){ ul.innerHTML="<li class='muted'>— Sin eventos —</li>"; return; }
+  state.hist.forEach(l=>{ const li=document.createElement("li"); li.textContent=l; ul.appendChild(li); });
+}
+function powerImgSrc(p){
+  const candidate = p.image ? p.image : `img/powerups/${slug(p.nombre)}.png`;
+  return asset(candidate);
+}
+const phSrc = asset('img/powerups/_placeholder.png');
+function renderPowers(){
+  // Mano
+  const hand=el("handList"); hand.innerHTML="";
+  if(!state.mano.length){
+    hand.innerHTML="<li class='muted'>— Sin cartas —</li>";
+  } else {
+    const p=state.mano[0];
+    const src = powerImgSrc(p);
+    hand.innerHTML = `<li class="card" style="padding:8px">
+      <div class="space">
+        <div class="flex" style="gap:10px;align-items:flex-start">
+          <img src="${src}" alt="" style="width:80px;height:80px;object-fit:contain;border-radius:8px"
+               onerror="this.onerror=null;this.src='${phSrc}'"/>
+          <div>
+            <div style="font-weight:700">${p.nombre}</div>
+            <div class="muted">${p.deck} · ${p.tokens==="instant"?"instantáneo":(p.tokens+" token(s)")}</div>
+            ${p.nota ? `<div class="nota">${p.nota}</div>` : ""}
+          </div>
+        </div>
+        <button id="activateBtn" class="btn sm">Activar</button>
+      </div>
+    </li>`;
+    el("activateBtn").onclick=()=>{
+      const card = state.mano[0]; if(!card) return;
+      playSnd("activate");
+      if (card.id === "carronero") {
+        state.mano = [];
+        pushHist("Activado: Carroñero — elige un poder del catálogo");
+        renderPowers();
+        openCarroneroPicker();
+        return;
+      }
+      if(card.tokens === "instant"){
+        pushHist(`Poder instantáneo: ${card.nombre}`);
+        state.mano = []; renderPowers(); return;
+      }
+      state.activos=[{power:card,tokensRestantes:Number(card.tokens)}];
+      state.mano=[]; pushHist(`Activado: ${card.nombre} (${card.tokens} token${card.tokens===1?"":"s"})`);
+      renderPowers();
+    };
+  }
+  // Activo
+  const active=el("activeList"); active.innerHTML="";
+  if(!state.activos.length){
+    active.innerHTML="<li class='muted'>— Ninguno —</li>";
+  } else {
+    const slot=state.activos[0];
+    const src = powerImgSrc(slot.power);
+    active.innerHTML = `<li class="card" style="padding:8px">
+      <div class="space">
+        <div class="flex" style="gap:10px;align-items:flex-start">
+          <img src="${src}" alt="" style="width:80px;height:80px;object-fit:contain;border-radius:8px"
+               onerror="this.onerror=null;this.src='${phSrc}'"/>
+          <div>
+            <div style="font-weight:700">${slot.power.nombre}</div>
+            <div class="muted">${slot.tokensRestantes==null?"instantáneo":(slot.tokensRestantes+" token(s) restantes")}</div>
+            ${slot.power.nota ? `<div class="nota">${slot.power.nota}</div>` : ""}
+          </div>
+        </div>
+        <div class="flex">
+          ${slot.tokensRestantes!=null?`
+            <button id="spend1Btn" class="btn sm">Gastar 1</button>
+            <button id="spendAllBtn" class="btn sm">Gastar todos</button>`:""}
+        </div>
+      </div>
+    </li>`;
+    if(slot.tokensRestantes!=null){
+      el("spend1Btn").onclick=spendOneToken;
+      el("spendAllBtn").onclick=spendAllTokens;
+    }
+  }
+}
 
-document.getElementById("roll2d6Btn").onclick=()=>{
-  const d1=rollDie(6), d2=rollDie(6), total=d1+d2+bonifs[state.marcha];
-  pushHist(`2d6: ${d1}+${d2}+${bonifs[state.marcha]} = ${total}`);
-  pushDice(`Movimiento: ${total}`);
-};
-document.getElementById("rollGenericBtn").onclick=()=>{
-  const n=state.diceCount, vals=Array.from({length:n},()=>rollDie(6));
-  pushHist(`${n}d6: ${vals.join("+")}`);
-  pushDice(`${n}d6: ${vals.reduce((a,b)=>a+b,0)}`);
-};
-document.getElementById("diceCount").onchange=()=>{state.diceCount=+el("diceCount").value;};
+/* =============== Lógica de juego: tokens, dados, mazos =============== */
+function spendOneToken(){
+  if(!state.activos.length) return;
+  const slot = state.activos[0];
+  if(slot.tokensRestantes == null) return;
+  playSnd("spend");
+  if(slot.tokensRestantes <= 1){
+    pushHist(`Finaliza: ${slot.power.nombre}`);
+    state.activos = [];
+  } else {
+    slot.tokensRestantes -= 1;
+    pushHist(`Gastas 1 token de ${slot.power.nombre} → quedan ${slot.tokensRestantes}`);
+  }
+  renderPowers();
+}
+function spendAllTokens(){
+  if(!state.activos.length) return;
+  const slot = state.activos[0];
+  if(slot.tokensRestantes == null) return;
+  playSnd("spend");
+  pushHist(`Agotas todos los tokens de ${slot.power.nombre}`);
+  state.activos = [];
+  renderPowers();
+}
+function roll2d6(){
+  if(state.fc){ pushHist("No puedes lanzar: FC"); return; }
+  if(state.modoArbitro && state.fase!=="lanzar"){ pushHist("No es fase de lanzar"); return; }
+  playSnd("roll");
+  const d1=rollDie(6), d2=rollDie(6);
+  const total = d1 + d2 + bonifs[state.marcha];
+  const derrapes = [d1,d2].filter(v=>v===2||v===5).length; // +1D por cada 2 o 5
+  pushHist(`2d6 (${d1}+${d2}) + bonif(${bonifs[state.marcha]}) = ${total}${derrapes?` → Derrape +${derrapes}D`:""}`);
+  pushDice(`Movimiento: ${total}${derrapes?` +${derrapes}D`:""}`);
+}
+function rollNd6(n){
+  playSnd("roll");
+  const vals=[]; for(let i=0;i<n;i++) vals.push(rollDie(6));
+  const total=vals.reduce((a,b)=>a+b,0);
+  pushHist(`${n}d6: ${vals.join(" + ")} = ${total}`);
+  pushDice(`${n}d6: ${total}`);
+}
+function drawSuggested(){
+  if(state.mano.length){ pushHist("Ya tienes carta en mano"); return; }
+  const deck=sugerirDeck(state.posicionActual,state.jugadoresTotal);
+  const pool=state.catalog.filter(p=>p.deck===deck || p.deck==="ambos");
+  const total=pool.reduce((a,p)=>a+(state.counts[p.id]?.[deck]||0),0);
+  if(total<=0){ pushHist("No hay cartas disponibles en el mazo sugerido"); return; }
+  let r=Math.floor(Math.random()*total);
+  for(const p of pool){
+    r-=(state.counts[p.id]?.[deck]||0);
+    if(r<0){
+      state.mano=[p];
+      pushHist(`Robas: ${p.nombre}${p.nota?(" — "+p.nota):""}`);
+      renderPowers();
+      return;
+    }
+  }
+}
 
-function renderAll(){renderPalette(state.color);renderPlayer();renderHistory();renderDiceLog();}
+/* =============== Eventos UI =============== */
+document.getElementById("roll2d6Btn").onclick=roll2d6;
+document.getElementById("rollGenericBtn").onclick=()=>rollNd6(state.diceCount);
+document.getElementById("diceCount").onchange=()=>{ state.diceCount=+document.getElementById("diceCount").value; };
+
+document.getElementById("fcBtn").onclick=()=>{
+  state.fc=!state.fc;
+  if(state.fc){ state.marcha=1; playSnd("fc"); }
+  renderPlayer();
+};
+document.getElementById("arbToggle").onchange=()=>{ state.modoArbitro=document.getElementById("arbToggle").checked; renderPlayer(); };
+
+document.getElementById("totalPlayers").oninput=()=>{ state.jugadoresTotal=Math.max(1,+document.getElementById("totalPlayers").value||1); renderArb(); };
+document.getElementById("position").oninput=()=>{ state.posicionActual=Math.max(1,+document.getElementById("position").value||1); renderArb(); };
+
+document.getElementById("nextPhaseBtn").onclick=()=>{
+  const order=["reponer","accion1","lanzar","accion2","cierre"];
+  state.fase=order[(order.indexOf(state.fase)+1)%order.length];
+  renderArb(); renderPlayer();
+};
+document.getElementById("resetTurnBtn").onclick=()=>{ state.fase="reponer"; renderArb(); renderPlayer(); };
+
+document.getElementById("drawSuggestedBtn").onclick=drawSuggested;
+document.getElementById("discardHandBtn").onclick=()=>{ if(state.mano.length){ state.mano=[]; pushHist("Descartas la mano"); renderPowers(); } };
+
+document.getElementById("soundToggle").onchange=(e)=>{
+  state.muted = !e.target.checked; // ON por defecto
+};
+
+/* =============== Init =============== */
+function renderAll(){
+  renderPalette(state.color);
+  const key = COLOR_TO_CAR_KEY[state.color] || "trash";
+  document.getElementById("playerCarIcon").src = asset(`img/autos/${key}.png`);
+  document.getElementById("carName").textContent = CAR_LABEL[key] || "Car";
+  document.getElementById("soundToggle").checked = true; // sonido ON
+  state.muted = false;
+  renderPlayer(); renderArb(); renderPowers(); renderDiceLog(); renderHistory();
+}
 renderAll();
 </script>
 </body>
