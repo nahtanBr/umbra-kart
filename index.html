@@ -187,54 +187,72 @@ function slug(s){
     .toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"");
 }
 
-/* =============== Colores → autos e imágenes =============== */
+/* === Paleta de colores → personajes (incluye motos) === */
 const COLOR_OPTIONS = [
   "#0f172a", // trash
   "#1d4ed8", // pinion
   "#047857", // engine
   "#facc15", // oxide (amarillo)
-  "#ffffff", // scorch (blanco)
+  "#e5e7eb", // scorch (blanco puro)
   "#581c87", // spikes
   "#14532d", // rogue
   "#7f1d1d", // crusher
   "#312e81", // ashes
-  "#1f2937"  // fang
+  "#1f2937", // fang
+  "#4b5563", // witch (gris oscuro, MT-09)
+  "#22c55e", // monstar (verde ER6n)
+  "#e5e7eb"  // paniga (blanco humo, Panigale)
 ];
+
 const COLOR_TO_CAR_KEY = {
   "#0f172a": "trash",
   "#1d4ed8": "pinion",
   "#047857": "engine",
   "#facc15": "oxide",
-  "#ffffff": "scorch",
+  "#e5e7eb": "scorch",
   "#581c87": "spikes",
   "#14532d": "rogue",
   "#7f1d1d": "crusher",
   "#312e81": "ashes",
-  "#1f2937": "fang"
+  "#1f2937": "fang",
+  "#4b5563": "witch",
+  "#22c55e": "monstar",
+  "#e5e7eb": "paniga"
 };
+
 const CAR_LABEL = {
   trash:"Trash", pinion:"Pinion", engine:"Engine", oxide:"Oxide", scorch:"Scorch",
-  spikes:"Spikes", rogue:"Rogue", crusher:"Crusher", ashes:"Ashes", fang:"Fang"
+  spikes:"Spikes", rogue:"Rogue", crusher:"Crusher", ashes:"Ashes", fang:"Fang",
+  witch:"Witch", monstar:"Monstar", paniga:"Paniga"
 };
-function renderPalette(sel){
-  const pal=document.getElementById("colorPalette"); pal.innerHTML="";
-  COLOR_OPTIONS.forEach(c=>{
-    const b=document.createElement("button");
-    b.className="color-swatch"+(c===sel?" active":"");
-    b.style.background=c; b.onclick=()=>setTheme(c);
-    pal.appendChild(b);
-  });
-}
+
+/* === Tema y actualización de imágenes/título según color === */
 function setTheme(c){
+  // gradiente con negro para mantener contraste aun con colores claros
   document.body.style.background = `linear-gradient(to bottom, ${c}, #000)`;
   state.color = c;
+
+  // selecciona el personaje según color y actualiza imágenes/nombre
   const key = COLOR_TO_CAR_KEY[c] || "trash";
   const label = CAR_LABEL[key] || "Car";
-  document.getElementById("heroCar").src = asset(`img/autos/${key}.png`);
-  document.getElementById("playerCarIcon").src = asset(`img/autos/${key}.png`);
-  document.getElementById("carName").textContent = label;
+
+  // si usas control de versión de assets, conserva tu helper `asset()`
+  const src = (typeof asset === "function")
+    ? asset(`img/autos/${key}.png`)
+    : `img/autos/${key}.png`;
+
+  const heroEl   = document.getElementById("heroCar");       // si existe
+  const playerEl = document.getElementById("playerCarIcon"); // icono grande del panel
+  const nameEl   = document.getElementById("carName");
+
+  if (heroEl)   heroEl.src = src;
+  if (playerEl) playerEl.src = src;
+  if (nameEl)   nameEl.textContent = label;
+
+  // repintar paleta para marcar el color activo
   renderPalette(c);
 }
+
 
 /* =============== Catálogo apocalíptico con imágenes =============== */
 const CATALOG_BASE = [
