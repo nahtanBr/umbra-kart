@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Umbra Kart — Panel de Jugador</title>
+<title>MAD KART</title>
 <style>
   :root{
     --bg:#7f1d1d; --bg2:#000000;
@@ -208,35 +208,35 @@ function setTheme(c){
 /* =================== CATÁLOGO (APOCALÍPTICO) CON IMAGEN =================== */
 /* Usa estos nombres de archivo en /img/powerups/ (ajústalos si tus PNG tienen otro nombre) */
 const CATALOG_BASE = [
-  { id:"escudo-1", nombre:"Caparazón verde", deck:"ambos", tokens:1,
+  { id:"escudo-1", nombre:"Cañería oxidada", deck:"ambos", tokens:1,
     nota:"Viaja en línea recta 12 casillas por turno hasta centrifugarse. Sirve como escudo. CAUSA FC.",
     copias_delanteros:3, copias_rezagados:3, image:"img/powerups/caneria-oxidada.png" },
 
-  { id:"escudo-1x3", nombre:"Caparazón rojo", deck:"ambos", tokens:1,
+  { id:"escudo-1x3", nombre:"cohete casero", deck:"ambos", tokens:1,
     nota:"Busca al jugador más cercano e ignora centrífuga. Sirve como escudo. CAUSA FC.",
     copias_delanteros:2, copias_rezagados:2, image:"img/powerups/cohete-casero.png" },
 
-  { id:"escudo-3", nombre:"Caparazón verde x3", deck:"ambos", tokens:3,
-    nota:"Tres usos del caparazón verde (viaja recto). Puede actuar como escudo. Puede causar FC.",
-    copias_delanteros:2, copias_rezagados:2, image:"img/powerups/llanta-con-puas.png" },
+  { id:"escudo-3", nombre:"llanta con puas", deck:"ambos", tokens:3,
+    nota:"Tres llantas que giran al rededor Busca al jugador más cercano e ignora centrífuga. Sirve como escudo. CAUSA FC.",
+    copias_delanteros:0, copias_rezagados:3, image:"img/powerups/llanta-con-puas.png" },
 
-  { id:"escudo-3x3", nombre:"Caparazón rojo x3", deck:"rezagados", tokens:3,
-    nota:"Tres usos del caparazón rojo (busca rival). Puede causar FC.",
-    copias_delanteros:0, copias_rezagados:3, image:"img/powerups/cohetes-no-guiados.png" },
+  { id:"escudo-3x3", nombre:"cohetes no guiados", deck:"rezagados", tokens:3,
+    nota:"viaja en línea recta 12 casillas por turno hasta centrifugarse. Sirve como escudo. CAUSA FC.",
+    copias_delanteros:2, copias_rezagados:2, image:"img/powerups/cohetes-no-guiados.png" },
 
-  { id:"ghost", nombre:"Ghost", deck:"rezagados", tokens:1,
+  { id:"ghost", nombre:"carroñero", deck:"rezagados", tokens:1,
     nota:"Roba 1 carta de la mano de un rival.",
-    copias_delanteros:0, copias_rezagados:2, image:"img/powerups/cadenas-garfio.png" },
+    copias_delanteros:0, copias_rezagados:2, image:"img/powerups/carronero.png" },
 
-  { id:"bomba", nombre:"Bomba", deck:"ambos", tokens:2,
+  { id:"bomba", nombre:"Barril explosivo", deck:"ambos", tokens:2,
     nota:"Dos tokens de turno; explota manualmente o al agotarse (radio 2). CAUSA FC.",
     copias_delanteros:2, copias_rezagados:2, image:"img/powerups/barril-explosivo.png" },
 
-  { id:"plantaF", nombre:"Planta de fuego", deck:"rezagados", tokens:3,
+  { id:"plantaF", nombre:"lanza llamas", deck:"rezagados", tokens:3,
     nota:"Tres tokens. Tira 2d6 + bonif. Debe gastarse en un solo turno en cualquier dirección. CAUSA FC.",
     copias_delanteros:0, copias_rezagados:2, image:"img/powerups/lanza-llamas.png" },
 
-  { id:"boomerang", nombre:"Boomerang", deck:"rezagados", tokens:3,
+  { id:"boomerang", nombre:"Ráfaga de tuercas", deck:"rezagados", tokens:3,
     nota:"Tres tokens. Avanza 5 casillas hacia adelante (sólo adelante) y regresa por la misma trayectoria. CAUSA FC.",
     copias_delanteros:0, copias_rezagados:2, image:"img/powerups/rafaga-tuercas.png" },
 
@@ -253,7 +253,7 @@ const CATALOG_BASE = [
     copias_delanteros:2, copias_rezagados:3, image:"img/powerups/bidones-nitro.png" },
 
   { id:"estrella", nombre:"Monster Truck", deck:"ambos", tokens:1,
-    nota:"Dos tokens de turno. +2 marchas. No tira dados: avanza 12 + bonif. Si estrella a alguien, causa FC.",
+    nota:"Dos tokens de turno. +2 marchas. No tira dados: avanza 12 + bonif. Si estrella a alguien, causa FC, ignora centrifuga.",
     copias_delanteros:1, copias_rezagados:2, image:"img/powerups/monster-truck.png" },
 
   { id:"bala", nombre:"Carro blindado con taladro", deck:"rezagados", tokens:2,
@@ -269,7 +269,7 @@ const CATALOG_BASE = [
     copias_delanteros:0, copias_rezagados:2, image:"img/powerups/turbina-experimental.png" },
 
   { id:"planta", nombre:"Motosierra montada", deck:"rezagados", tokens:1,
-    nota:"Ataca adyacentes durante el avance. Ignora escudos y puede causar FC.",
+    nota:"Ataca adyacentes durante el avance. Ignora escudos y puede causar FC. alcance 2",
     copias_delanteros:0, copias_rezagados:2, image:"img/powerups/motosierra-montada.png" },
 
   { id:"caparazon-azul", nombre:"Drone perseguidor", deck:"rezagados", tokens:1,
