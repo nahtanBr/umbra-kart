@@ -631,7 +631,7 @@ document.getElementById("totalPlayers").oninput=()=>{ state.jugadoresTotal=Math.
 document.getElementById("position").oninput=()=>{ state.posicionActual=Math.max(1,+document.getElementById("position").value||1); renderArb(); };
 
 document.getElementById("nextPhaseBtn").onclick=()=>{
-  const order=["reponer","accion1","lanzar","accion2","cierre"];
+  const order=["reponer","lanzar","accion2","cierre"];
   state.fase=order[(order.indexOf(state.fase)+1)%order.length];
   renderArb(); renderPlayer();
 };
